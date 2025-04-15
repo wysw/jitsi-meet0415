@@ -156,6 +156,9 @@ public class MainActivity extends JitsiMeetActivity {
         JitsiMeetConferenceOptions defaultOptions
             = new JitsiMeetConferenceOptions.Builder()
             .setServerURL(buildURL(defaultURL))
+            .setFeatureFlag("resolution", 240)
+            .setFeatureFlag("pip.enabled", false) // 画中画禁用
+            .setFeatureFlag("filmstrip.enabled", false) // 减少 UI 元素渲染
             .setFeatureFlag("welcomepage.enabled", true)
             .setFeatureFlag("server-url-change.enabled", !configurationByRestrictions)
             .build();
