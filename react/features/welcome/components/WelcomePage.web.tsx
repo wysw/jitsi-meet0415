@@ -222,7 +222,7 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
                             }
                         </div>
                         <h1 className = 'header-text-title'>
-                            {t('welcomepage.headerTitle')}
+                            {t('会通')}
                         </h1>
                         <span className = 'header-text-subtitle'>
                             {t('welcomepage.headerSubtitle')}
@@ -239,7 +239,7 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
                                             id = 'enter_room_field'
                                             onChange = { this._onRoomChange }
                                             pattern = { ROOM_NAME_VALIDATE_PATTERN_STR }
-                                            placeholder = { this.state.roomPlaceholder }
+                                            placeholder = { '请输入会议号' }
                                             ref = { this._setRoomInputRef }
                                             type = 'text'
                                             value = { this.state.room } />

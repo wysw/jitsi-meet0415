@@ -99,7 +99,7 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
         } = this.props;
 
         navigation.setOptions({
-            headerTitle: t('welcomepage.headerTitle')
+            headerTitle: t('会通')
         });
 
         navigation.addListener('focus', () => {
@@ -347,7 +347,7 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
                             onChange = { this._onRoomChange }
                             onFocus = { this._onFieldFocus }
                             onSubmitEditing = { this._onJoin }
-                            placeholder = { this.state.roomPlaceholder }
+                            placeholder = { '请输入会议号' }
                             returnKeyType = { 'go' }
                             value = { this.state.room } />
                         {
