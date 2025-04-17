@@ -1,57 +1,62 @@
 import { IJitsiConference } from '../conference/reducer';
+import { PERMISSIONS_MEETING_CHAT, PERMISSIONS_LOBBY_CHAT } from './constants';
 
 export enum FakeParticipant {
-    LocalScreenShare = 'LocalScreenShare',
-    RemoteScreenShare = 'RemoteScreenShare',
-    SharedVideo = 'SharedVideo',
+  LocalScreenShare = 'LocalScreenShare',
+  RemoteScreenShare = 'RemoteScreenShare',
+  SharedVideo = 'SharedVideo',
     Whiteboard = 'Whiteboard'
 }
 
 export interface IParticipant {
-    avatarURL?: string;
-    botType?: string;
-    conference?: IJitsiConference;
-    displayName?: string;
-    dominantSpeaker?: boolean;
-    e2eeEnabled?: boolean;
-    e2eeSupported?: boolean;
-    e2eeVerificationAvailable?: boolean;
-    e2eeVerified?: boolean;
-    email?: string;
-    fakeParticipant?: FakeParticipant;
-    features?: IParticipantFeatures;
-    getId?: Function;
-    id: string;
-    isJigasi?: boolean;
-    isPromoted?: boolean;
-    isReplaced?: boolean;
-    isReplacing?: number;
-    isSilent?: boolean;
-    jwtId?: string;
-    loadableAvatarUrl?: string;
-    loadableAvatarUrlUseCORS?: boolean;
-    local?: boolean;
-    localRecording?: boolean;
-    name?: string;
-    pinned?: boolean;
-    presence?: string;
-    raisedHandTimestamp?: number;
-    region?: string;
-    remoteControlSessionStatus?: boolean;
-    role?: string;
-    sources?: Map<string, Map<string, ISourceInfo>>;
-    supportsRemoteControl?: boolean;
+  avatarURL?: string;
+  botType?: string;
+  conference?: IJitsiConference;
+  displayName?: string;
+  dominantSpeaker?: boolean;
+  e2eeEnabled?: boolean;
+  e2eeSupported?: boolean;
+  e2eeVerificationAvailable?: boolean;
+  e2eeVerified?: boolean;
+  email?: string;
+  fakeParticipant?: FakeParticipant;
+  features?: IParticipantFeatures;
+  getId?: Function;
+  id: string;
+  isJigasi?: boolean;
+  isPromoted?: boolean;
+  isReplaced?: boolean;
+  isReplacing?: number;
+  isSilent?: boolean;
+  jwtId?: string;
+  loadableAvatarUrl?: string;
+  loadableAvatarUrlUseCORS?: boolean;
+  local?: boolean;
+  localRecording?: boolean;
+  name?: string;
+  pinned?: boolean;
+  presence?: string;
+  raisedHandTimestamp?: number;
+  region?: string;
+  remoteControlSessionStatus?: boolean;
+  role?: string;
+  sources?: Map<string, Map<string, ISourceInfo>>;
+  supportsRemoteControl?: boolean;
+  chatPermissions?: {
+    meetingChat: PERMISSIONS_MEETING_CHAT;
+    lobbyChat: PERMISSIONS_LOBBY_CHAT;
+  };
 }
 
 export interface ILocalParticipant extends IParticipant {
-    audioOutputDeviceId?: string;
-    cameraDeviceId?: string;
-    jwtId?: string;
-    micDeviceId?: string;
-    startWithAudioMuted?: boolean;
-    startWithVideoMuted?: boolean;
-    userSelectedMicDeviceId?: string;
-    userSelectedMicDeviceLabel?: string;
+  audioOutputDeviceId?: string;
+  cameraDeviceId?: string;
+  jwtId?: string;
+  micDeviceId?: string;
+  startWithAudioMuted?: boolean;
+  startWithVideoMuted?: boolean;
+  userSelectedMicDeviceId?: string;
+  userSelectedMicDeviceLabel?: string;
 }
 
 export interface IParticipantFeatures {
@@ -74,17 +79,17 @@ export interface IParticipantFeatures {
 }
 
 export interface ISourceInfo {
-    muted: boolean;
-    videoType: string;
+  muted: boolean;
+  videoType: string;
 }
 
 export interface IJitsiParticipant {
-    getDisplayName: () => string;
-    getId: () => string;
-    getJid: () => string;
-    getRole: () => string;
-    getSources: () => Map<string, Map<string, ISourceInfo>>;
-    isHidden: () => boolean;
+  getDisplayName: () => string;
+  getId: () => string;
+  getJid: () => string;
+  getRole: () => string;
+  getSources: () => Map<string, Map<string, ISourceInfo>>;
+  isHidden: () => boolean;
 }
 
 export type ParticipantFeaturesKey = keyof IParticipantFeatures;

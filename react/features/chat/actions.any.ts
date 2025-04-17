@@ -1,23 +1,28 @@
+/* global APP, JitsiMeetJS, config, interfaceConfig */
 import { IStore } from '../app/types';
 import { getCurrentConference } from '../base/conference/functions';
 import { getLocalParticipant } from '../base/participants/functions';
+import { getChatPermissions } from './functions';
 import { IParticipant } from '../base/participants/types';
 import { LOBBY_CHAT_INITIALIZED } from '../lobby/constants';
 
 import {
-    ADD_MESSAGE,
-    ADD_MESSAGE_REACTION,
-    CLEAR_MESSAGES,
-    CLOSE_CHAT,
-    EDIT_MESSAGE,
-    REMOVE_LOBBY_CHAT_PARTICIPANT,
-    SEND_MESSAGE,
-    SEND_REACTION,
-    SET_IS_POLL_TAB_FOCUSED,
-    SET_LOBBY_CHAT_ACTIVE_STATE,
-    SET_LOBBY_CHAT_RECIPIENT,
-    SET_PRIVATE_MESSAGE_RECIPIENT
+  ADD_MESSAGE,
+  SET_CHAT_PERMISSIONS,
+  ADD_MESSAGE_REACTION,
+  CLEAR_MESSAGES,
+  CLOSE_CHAT,
+  EDIT_MESSAGE,
+  REMOVE_LOBBY_CHAT_PARTICIPANT,
+  SEND_MESSAGE,
+  SEND_REACTION,
+  SET_IS_POLL_TAB_FOCUSED,
+  SET_LOBBY_CHAT_ACTIVE_STATE,
+  SET_LOBBY_CHAT_RECIPIENT,
+  SET_PRIVATE_MESSAGE_RECIPIENT,
 } from './actionTypes';
+
+import logger from '../app/logger';
 
 /**
  * Adds a chat message to the collection of messages.
@@ -45,11 +50,51 @@ import {
  * }}
  */
 export function addMessage(messageDetails: Object) {
-    return {
-        type: ADD_MESSAGE,
-        ...messageDetails
-    };
+  return {
+    type: ADD_MESSAGE,
+    ...messageDetails,
+  };
 }
+// 定义更新聊天权限的 action creator
+export function setChatPermissions(permissionsObj: any) {
+  return (dispatch: any, getState: any) => {
+    (logger as any).warn(`fetch(/update-chat-permissions`);
+    const state = getState(); // 获取当前 Redux state
+    const conference = getCurrentConference(state); // 获取当前会议实例
+    const localParticipant = getLocalParticipant(state); // 获取当前用户信息
+    const participantId = localParticipant?.id; // 获取当前用户的 ID
+    const { webhookProxyUrl: url } = state['features/base/config'];
+
+    const permission = getChatPermissions(state);
+
+    const roomJid = conference?.room?.roomjid ?? '';
+    const meetingChat = permissionsObj.meetingChat ?? permission.meetingChat;
+    const lobbyChat = permissionsObj.lobbyChat ?? permission.lobbyChat;
+
+    dispatch({
+      type: SET_CHAT_PERMISSIONS,
+      payload: permissionsObj,
+    });
+    
+    if (conference && participantId) {
+      // 发送命令给会议，更新聊天权限
+      conference.sendCommand('chat-permissions', {
+        value: JSON.stringify({
+          permissions: { meetingChat, lobbyChat },
+          from: participantId,
+        }),
+      });
+      conference.sendCommandOnce('chat-permissions', {
+        value: JSON.stringify({
+          permissions: { meetingChat, lobbyChat },
+          from: participantId,
+        }),
+      });
+    } 
+    // 更新 Redux state 中的聊天权限
+  };
+}
+
 
 /**
  * Adds a reaction to a chat message.
@@ -66,10 +111,10 @@ export function addMessage(messageDetails: Object) {
  * }}
  */
 export function addMessageReaction(reactionDetails: Object) {
-    return {
-        type: ADD_MESSAGE_REACTION,
+  return {
+    type: ADD_MESSAGE_REACTION,
         ...reactionDetails
-    };
+  };
 }
 
 /**
@@ -83,10 +128,10 @@ export function addMessageReaction(reactionDetails: Object) {
  * }}
  */
 export function editMessage(message: Object) {
-    return {
-        type: EDIT_MESSAGE,
+  return {
+    type: EDIT_MESSAGE,
         message
-    };
+  };
 }
 
 /**
@@ -97,9 +142,9 @@ export function editMessage(message: Object) {
  * }}
  */
 export function clearMessages() {
-    return {
+  return {
         type: CLEAR_MESSAGES
-    };
+  };
 }
 
 /**
@@ -110,9 +155,9 @@ export function clearMessages() {
  * }}
  */
 export function closeChat() {
-    return {
+  return {
         type: CLOSE_CHAT
-    };
+  };
 }
 
 /**
@@ -127,11 +172,11 @@ export function closeChat() {
  * }}
  */
 export function sendMessage(message: string, ignorePrivacy = false) {
-    return {
-        type: SEND_MESSAGE,
-        ignorePrivacy,
+  return {
+    type: SEND_MESSAGE,
+    ignorePrivacy,
         message
-    };
+  };
 }
 
 /**
@@ -144,12 +189,12 @@ export function sendMessage(message: string, ignorePrivacy = false) {
  */
 export function sendReaction(reaction: string, messageId: string, receiverId?: string) {
 
-    return {
-        type: SEND_REACTION,
-        reaction,
-        messageId,
+  return {
+    type: SEND_REACTION,
+    reaction,
+    messageId,
         receiverId
-    };
+  };
 }
 
 /**
@@ -162,10 +207,10 @@ export function sendReaction(reaction: string, messageId: string, receiverId?: s
  * }}
  */
 export function setPrivateMessageRecipient(participant?: Object) {
-    return {
-        participant,
+  return {
+    participant,
         type: SET_PRIVATE_MESSAGE_RECIPIENT
-    };
+  };
 }
 
 /**
@@ -175,10 +220,10 @@ export function setPrivateMessageRecipient(participant?: Object) {
  * @returns {Function}
  */
 export function setIsPollsTabFocused(isPollsTabFocused: boolean) {
-    return {
-        isPollsTabFocused,
+  return {
+    isPollsTabFocused,
         type: SET_IS_POLL_TAB_FOCUSED
-    };
+  };
 }
 
 /**
@@ -190,32 +235,32 @@ export function setIsPollsTabFocused(isPollsTabFocused: boolean) {
  * @returns {Function}
  */
 export function onLobbyChatInitialized(lobbyChatInitializedInfo: { attendee: IParticipant; moderator: IParticipant; }) {
-    return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-        const state = getState();
-        const conference = getCurrentConference(state);
+  return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+    const state = getState();
+    const conference = getCurrentConference(state);
 
-        const lobbyLocalId = conference?.myLobbyUserId();
+    const lobbyLocalId = conference?.myLobbyUserId();
 
-        if (!lobbyLocalId) {
-            return;
-        }
+    if (!lobbyLocalId) {
+      return;
+    }
 
-        if (lobbyChatInitializedInfo.moderator.id === lobbyLocalId) {
-            dispatch({
-                type: SET_LOBBY_CHAT_RECIPIENT,
-                participant: lobbyChatInitializedInfo.attendee,
+    if (lobbyChatInitializedInfo.moderator.id === lobbyLocalId) {
+      dispatch({
+        type: SET_LOBBY_CHAT_RECIPIENT,
+        participant: lobbyChatInitializedInfo.attendee,
                 open: true
-            });
-        }
+      });
+    }
 
-        if (lobbyChatInitializedInfo.attendee.id === lobbyLocalId) {
-            return dispatch({
-                type: SET_LOBBY_CHAT_RECIPIENT,
-                participant: lobbyChatInitializedInfo.moderator,
+    if (lobbyChatInitializedInfo.attendee.id === lobbyLocalId) {
+      return dispatch({
+        type: SET_LOBBY_CHAT_RECIPIENT,
+        participant: lobbyChatInitializedInfo.moderator,
                 open: false
-            });
-        }
-    };
+      });
+    }
+  };
 }
 
 /**
@@ -226,10 +271,10 @@ export function onLobbyChatInitialized(lobbyChatInitializedInfo: { attendee: IPa
  * @returns {Object}
  */
 export function setLobbyChatActiveState(value: boolean) {
-    return {
-        type: SET_LOBBY_CHAT_ACTIVE_STATE,
+  return {
+    type: SET_LOBBY_CHAT_ACTIVE_STATE,
         payload: value
-    };
+  };
 }
 
 /**
@@ -241,10 +286,10 @@ export function setLobbyChatActiveState(value: boolean) {
  * @returns {Object}
  */
 export function removeLobbyChatParticipant(removeLobbyChatMessages?: boolean) {
-    return {
-        type: REMOVE_LOBBY_CHAT_PARTICIPANT,
+  return {
+    type: REMOVE_LOBBY_CHAT_PARTICIPANT,
         removeLobbyChatMessages
-    };
+  };
 }
 
 /**
@@ -256,48 +301,48 @@ export function removeLobbyChatParticipant(removeLobbyChatMessages?: boolean) {
  * @returns {Object}
  */
 export function handleLobbyChatInitialized(participantId: string) {
-    return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-        if (!participantId) {
-            return;
-        }
-        const state = getState();
-        const conference = state['features/base/conference'].conference;
-        const { knockingParticipants } = state['features/lobby'];
-        const { lobbyMessageRecipient } = state['features/chat'];
-        const me = getLocalParticipant(state);
-        const lobbyLocalId = conference?.myLobbyUserId();
+  return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+    if (!participantId) {
+      return;
+    }
+    const state = getState();
+    const conference = state['features/base/conference'].conference;
+    const { knockingParticipants } = state['features/lobby'];
+    const { lobbyMessageRecipient } = state['features/chat'];
+    const me = getLocalParticipant(state);
+    const lobbyLocalId = conference?.myLobbyUserId();
 
 
-        if (lobbyMessageRecipient && lobbyMessageRecipient.id === participantId) {
-            return dispatch(setLobbyChatActiveState(true));
-        }
+    if (lobbyMessageRecipient && lobbyMessageRecipient.id === participantId) {
+      return dispatch(setLobbyChatActiveState(true));
+    }
 
         const attendee = knockingParticipants.find(p => p.id === participantId);
 
-        if (attendee && attendee.chattingWithModerator === lobbyLocalId) {
-            return dispatch({
-                type: SET_LOBBY_CHAT_RECIPIENT,
-                participant: attendee,
+    if (attendee && attendee.chattingWithModerator === lobbyLocalId) {
+      return dispatch({
+        type: SET_LOBBY_CHAT_RECIPIENT,
+        participant: attendee,
                 open: true
-            });
-        }
+      });
+    }
 
-        if (!attendee) {
-            return;
-        }
+    if (!attendee) {
+      return;
+    }
 
         const payload = { type: LOBBY_CHAT_INITIALIZED,
-            moderator: {
-                ...me,
-                name: 'Moderator',
+      moderator: {
+        ...me,
+        name: 'Moderator',
                 id: lobbyLocalId
-            },
+      },
             attendee };
 
-        // notify attendee privately.
-        conference?.sendLobbyMessage(payload, attendee.id);
+    // notify attendee privately.
+    conference?.sendLobbyMessage(payload, attendee.id);
 
-        // notify other moderators.
-        return conference?.sendLobbyMessage(payload);
-    };
+    // notify other moderators.
+    return conference?.sendLobbyMessage(payload);
+  };
 }

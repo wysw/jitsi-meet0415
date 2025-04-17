@@ -1,65 +1,89 @@
 import { ILocalParticipant, IParticipant } from '../base/participants/types';
+import {
+  PERMISSIONS_MEETING_CHAT,
+  PERMISSIONS_LOBBY_CHAT,
+} from '../base/participants/constants';
+
 import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
-    ADD_MESSAGE,
-    ADD_MESSAGE_REACTION,
-    CLEAR_MESSAGES,
-    CLOSE_CHAT,
-    EDIT_MESSAGE,
-    OPEN_CHAT,
-    REMOVE_LOBBY_CHAT_PARTICIPANT,
-    SET_IS_POLL_TAB_FOCUSED,
-    SET_LOBBY_CHAT_ACTIVE_STATE,
-    SET_LOBBY_CHAT_RECIPIENT,
-    SET_PRIVATE_MESSAGE_RECIPIENT
+  ADD_MESSAGE,
+  ADD_MESSAGE_REACTION,
+  CLEAR_MESSAGES,
+  CLOSE_CHAT,
+  EDIT_MESSAGE,
+  OPEN_CHAT,
+  REMOVE_LOBBY_CHAT_PARTICIPANT,
+  SET_IS_POLL_TAB_FOCUSED,
+  SET_LOBBY_CHAT_ACTIVE_STATE,
+  SET_LOBBY_CHAT_RECIPIENT,
+  SET_PRIVATE_MESSAGE_RECIPIENT,
+  SET_CHAT_PERMISSIONS,
 } from './actionTypes';
 import { IMessage } from './types';
 import { UPDATE_CONFERENCE_METADATA } from '../base/conference/actionTypes';
 
 const DEFAULT_STATE = {
-    groupChatWithPermissions: false,
-    isOpen: false,
-    isPollsTabFocused: false,
-    lastReadMessage: undefined,
-    messages: [],
-    reactions: {},
-    nbUnreadMessages: 0,
-    privateMessageRecipient: undefined,
-    lobbyMessageRecipient: undefined,
-    isLobbyChatActive: false
+  groupChatWithPermissions: false,
+  isOpen: false,
+  isPollsTabFocused: false,
+  lastReadMessage: undefined,
+  messages: [],
+  reactions: {},
+  nbUnreadMessages: 0,
+  privateMessageRecipient: undefined,
+  lobbyMessageRecipient: undefined,
+  isLobbyChatActive: false,
+  chatPermissions: {
+    meetingChat: PERMISSIONS_MEETING_CHAT.MUTED, // 默认允许自由聊天
+    lobbyChat: PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST, // 默认允许等候室私聊主持人
+  },
 };
 
 export interface IChatState {
-    groupChatWithPermissions: boolean;
-    isLobbyChatActive: boolean;
-    isOpen: boolean;
-    isPollsTabFocused: boolean;
-    lastReadMessage?: IMessage;
-    lobbyMessageRecipient?: {
+  groupChatWithPermissions: boolean;
+  isLobbyChatActive: boolean;
+  isOpen: boolean;
+  isPollsTabFocused: boolean;
+  lastReadMessage?: IMessage;
+  lobbyMessageRecipient?: {
         id: string;
         name: string;
-    } | ILocalParticipant;
-    messages: IMessage[];
-    nbUnreadMessages: number;
-    privateMessageRecipient?: IParticipant;
+      } | ILocalParticipant;
+  messages: IMessage[];
+  nbUnreadMessages: number;
+  privateMessageRecipient?: IParticipant;
+  chatPermissions: {
+    meetingChat: PERMISSIONS_MEETING_CHAT;
+    lobbyChat: PERMISSIONS_LOBBY_CHAT;
+  };
 }
 
 ReducerRegistry.register<IChatState>('features/chat', (state = DEFAULT_STATE, action): IChatState => {
     switch (action.type) {
-    case ADD_MESSAGE: {
+      case SET_CHAT_PERMISSIONS: {
+        const { meetingChat, lobbyChat } = action.payload;
+        return {
+          ...state,
+          chatPermissions: {
+            meetingChat: meetingChat || state.chatPermissions.meetingChat,
+            lobbyChat: lobbyChat || state.chatPermissions.lobbyChat,
+          },
+        };
+      }
+      case ADD_MESSAGE: {
         const newMessage: IMessage = {
-            displayName: action.displayName,
-            error: action.error,
-            participantId: action.participantId,
-            isReaction: action.isReaction,
-            messageId: action.messageId,
-            messageType: action.messageType,
-            message: action.message,
-            reactions: action.reactions,
-            privateMessage: action.privateMessage,
-            lobbyChat: action.lobbyChat,
-            recipient: action.recipient,
+          displayName: action.displayName,
+          error: action.error,
+          participantId: action.participantId,
+          isReaction: action.isReaction,
+          messageId: action.messageId,
+          messageType: action.messageType,
+          message: action.message,
+          reactions: action.reactions,
+          privateMessage: action.privateMessage,
+          lobbyChat: action.lobbyChat,
+          recipient: action.recipient,
             timestamp: action.timestamp
         };
 
@@ -75,135 +99,135 @@ ReducerRegistry.register<IChatState>('features/chat', (state = DEFAULT_STATE, ac
             ];
 
         return {
-            ...state,
+          ...state,
             lastReadMessage:
                 action.hasRead ? newMessage : state.lastReadMessage,
             nbUnreadMessages: state.isPollsTabFocused ? state.nbUnreadMessages + 1 : state.nbUnreadMessages,
             messages
         };
-    }
+      }
 
-    case ADD_MESSAGE_REACTION: {
+      case ADD_MESSAGE_REACTION: {
         const { participantId, reactionList, messageId } = action;
 
         const messages = state.messages.map(message => {
-            if (messageId === message.messageId) {
-                const newReactions = new Map(message.reactions);
+          if (messageId === message.messageId) {
+            const newReactions = new Map(message.reactions);
 
-                reactionList.forEach((reaction: string) => {
-                    let participants = newReactions.get(reaction);
+            reactionList.forEach((reaction: string) => {
+              let participants = newReactions.get(reaction);
 
-                    if (!participants) {
-                        participants = new Set();
-                        newReactions.set(reaction, participants);
-                    }
+              if (!participants) {
+                participants = new Set();
+                newReactions.set(reaction, participants);
+              }
 
-                    participants.add(participantId);
-                });
+              participants.add(participantId);
+            });
 
-                return {
-                    ...message,
+            return {
+              ...message,
                     reactions: newReactions
-                };
-            }
+            };
+          }
 
-            return message;
+          return message;
         });
 
         return {
-            ...state,
+          ...state,
             messages
         };
-    }
+      }
 
-    case CLEAR_MESSAGES:
+      case CLEAR_MESSAGES:
         return {
-            ...state,
-            lastReadMessage: undefined,
+          ...state,
+          lastReadMessage: undefined,
             messages: []
         };
 
-    case EDIT_MESSAGE: {
+      case EDIT_MESSAGE: {
         let found = false;
         const newMessage = action.message;
         const messages = state.messages.map(m => {
-            if (m.messageId === newMessage.messageId) {
-                found = true;
+          if (m.messageId === newMessage.messageId) {
+            found = true;
 
-                return newMessage;
-            }
+            return newMessage;
+          }
 
-            return m;
+          return m;
         });
 
         // no change
         if (!found) {
-            return state;
+          return state;
         }
 
         return {
-            ...state,
+          ...state,
             messages
         };
-    }
+      }
 
-    case SET_PRIVATE_MESSAGE_RECIPIENT:
+      case SET_PRIVATE_MESSAGE_RECIPIENT:
         return {
-            ...state,
+          ...state,
             privateMessageRecipient: action.participant
         };
 
-    case OPEN_CHAT:
+      case OPEN_CHAT:
         return {
-            ...state,
-            isOpen: true,
+          ...state,
+          isOpen: true,
             privateMessageRecipient: action.participant
         };
 
-    case CLOSE_CHAT:
+      case CLOSE_CHAT:
         return {
-            ...state,
-            isOpen: false,
+          ...state,
+          isOpen: false,
             lastReadMessage: state.messages[
                 navigator.product === 'ReactNative' ? 0 : state.messages.length - 1],
-            privateMessageRecipient: action.participant,
+          privateMessageRecipient: action.participant,
             isLobbyChatActive: false
         };
 
-    case SET_IS_POLL_TAB_FOCUSED: {
+      case SET_IS_POLL_TAB_FOCUSED: {
         return {
-            ...state,
-            isPollsTabFocused: action.isPollsTabFocused,
+          ...state,
+          isPollsTabFocused: action.isPollsTabFocused,
             nbUnreadMessages: 0
         }; }
 
-    case SET_LOBBY_CHAT_RECIPIENT:
+      case SET_LOBBY_CHAT_RECIPIENT:
         return {
-            ...state,
-            isLobbyChatActive: true,
-            lobbyMessageRecipient: action.participant,
-            privateMessageRecipient: undefined,
+          ...state,
+          isLobbyChatActive: true,
+          lobbyMessageRecipient: action.participant,
+          privateMessageRecipient: undefined,
             isOpen: action.open
         };
-    case SET_LOBBY_CHAT_ACTIVE_STATE:
+      case SET_LOBBY_CHAT_ACTIVE_STATE:
         return {
-            ...state,
-            isLobbyChatActive: action.payload,
-            isOpen: action.payload || state.isOpen,
+          ...state,
+          isLobbyChatActive: action.payload,
+          isOpen: action.payload || state.isOpen,
             privateMessageRecipient: undefined
         };
-    case REMOVE_LOBBY_CHAT_PARTICIPANT:
+      case REMOVE_LOBBY_CHAT_PARTICIPANT:
         return {
-            ...state,
+          ...state,
             messages: state.messages.filter(m => {
-                if (action.removeLobbyChatMessages) {
-                    return !m.lobbyChat;
-                }
+            if (action.removeLobbyChatMessages) {
+              return !m.lobbyChat;
+            }
 
-                return true;
-            }),
+            return true;
+          }),
             isOpen: state.isOpen && state.isLobbyChatActive ? false : state.isOpen,
-            isLobbyChatActive: false,
+          isLobbyChatActive: false,
             lobbyMessageRecipient: undefined
         };
     case UPDATE_CONFERENCE_METADATA: {

@@ -4,6 +4,7 @@ import { TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Divider, Text } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { setChatPermissions } from '../../../chat/actions.any';
 import { IReduxState } from '../../../app/types';
 import {
     requestDisableAudioModeration,
@@ -22,10 +23,14 @@ import Icon from '../../../base/icons/components/Icon';
 import { IconCheck, IconRaiseHand, IconVideoOff } from '../../../base/icons/svg';
 import { MEDIA_TYPE } from '../../../base/media/constants';
 import { raiseHand } from '../../../base/participants/actions';
-import { getRaiseHandsQueue, isLocalParticipantModerator } from '../../../base/participants/functions';
+import { getParticipantCount, getRaiseHandsQueue, isEveryoneModerator, isLocalParticipantModerator }
+    from '../../../base/participants/functions';
 import { LOWER_HAND_MESSAGE } from '../../../base/tracks/constants';
 import MuteEveryonesVideoDialog
     from '../../../video-menu/components/native/MuteEveryonesVideoDialog';
+
+import { PERMISSIONS_MEETING_CHAT, PERMISSIONS_LOBBY_CHAT } from '../../../base/participants/constants';
+import { getChatPermissions } from '../../../chat/functions';
 
 import styles from './styles';
 
@@ -45,7 +50,31 @@ export const ContextMenuMore = () => {
     }, [ dispatch ]);
     const { t } = useTranslation();
 
-    const isModerationSupported = useSelector((state: IReduxState) => isAvModerationSupported()(state));
+    const isModerationSupported = useSelector((state: IReduxState) => isAvModerationSupported()(state));    
+    const chatPermissions = useSelector(getChatPermissions);
+  const handleChatPermissionChange = useCallback(
+    (permission: string) => {
+      dispatch(
+        setChatPermissions({
+          meetingChat: permission,
+        })
+      );
+    },
+    [dispatch]
+  );
+  const handleLobbyChatPermissionChange = useCallback(
+    (permission: string) => {
+      dispatch(
+        setChatPermissions({
+          lobbyChat: permission,
+        })
+      );
+    },
+    [dispatch]
+  );
+
+    const allModerators = useSelector(isEveryoneModerator);
+    const participantCount = useSelector(getParticipantCount);
 
     const isAudioModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
     const isVideoModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.VIDEO));
@@ -117,8 +146,88 @@ export const ContextMenuMore = () => {
                         <Text style = { styles.contextMenuItemText }>
                             {t('participantsPane.actions.videoModeration')}
                         </Text>
-                    </TouchableOpacity>}
-            </>}
+                    </TouchableOpacity>}                
+                    <TouchableOpacity
+                        onPress={() =>
+                        handleLobbyChatPermissionChange(
+                            chatPermissions.lobbyChat ===
+                            PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST
+                            ? PERMISSIONS_LOBBY_CHAT.MUTED
+                            : PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST
+                        )
+                        }
+                        style={styles.contextMenuItem as ViewStyle}
+                    >
+                        {chatPermissions.lobbyChat ===
+                        PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST && (
+                        <Icon size={24} src={IconCheck} />
+                        )}
+
+                        <Text style={styles.contextMenuItemText}>
+                        {t('participantsPane.actions.allowPrivateChatWithModerator')}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() =>
+                        handleChatPermissionChange(PERMISSIONS_MEETING_CHAT.FREE)
+                        }
+                        style={styles.contextMenuItem as ViewStyle}
+                    >
+                        {chatPermissions.meetingChat === PERMISSIONS_MEETING_CHAT.FREE && (
+                        <Icon size={24} src={IconCheck} />
+                        )}
+
+                        <Text style={styles.contextMenuItemText}>
+                        {t('participantsPane.actions.allowFreeSpeech')}
+                        </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        onPress={() =>
+                        handleChatPermissionChange(PERMISSIONS_MEETING_CHAT.PUBLIC_ONLY)
+                        }
+                        style={styles.contextMenuItem as ViewStyle}
+                    >
+                        {chatPermissions.meetingChat ===
+                        PERMISSIONS_MEETING_CHAT.PUBLIC_ONLY && (
+                        <Icon size={24} src={IconCheck} />
+                        )}
+
+                        <Text style={styles.contextMenuItemText}>
+                        {t('participantsPane.actions.onlyPublicComments')}
+                        </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        onPress={() =>
+                        handleChatPermissionChange(
+                            PERMISSIONS_MEETING_CHAT.PRIVATETO_HOST
+                        )
+                        }
+                        style={styles.contextMenuItem as ViewStyle}
+                    >
+                        {chatPermissions.meetingChat ===
+                        PERMISSIONS_MEETING_CHAT.PRIVATETO_HOST && (
+                        <Icon size={24} src={IconCheck} />
+                        )}
+
+                        <Text style={styles.contextMenuItemText}>
+                        {t('participantsPane.actions.chatWithHostOnly')}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => handleChatPermissionChange('muted')}
+                        style={styles.contextMenuItem as ViewStyle}
+                    >
+                        {chatPermissions.meetingChat === PERMISSIONS_MEETING_CHAT.MUTED && (
+                        <Icon size={24} src={IconCheck} />
+                        )}
+
+                        <Text style={styles.contextMenuItemText}>
+                        {t('participantsPane.actions.allMembersMuted')}
+                        </Text>
+                    </TouchableOpacity>                                            
+                </>} 
         </BottomSheet>
     );
 };

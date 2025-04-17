@@ -98,6 +98,30 @@ export const SEND_REACTION = 'SEND_REACTION';
 export const SET_PRIVATE_MESSAGE_RECIPIENT = 'SET_PRIVATE_MESSAGE_RECIPIENT';
 
 /**
+ * The type of action which updates the chat permissions for participants.
+ *
+ * This action is used to modify chat permissions in a conference, such as:
+ * - Allowing or restricting public and private messages.
+ * - Enforcing mute restrictions on participants.
+ * - Controlling whether lobby members can chat with the host.
+ *
+ * The payload should be an object containing the updated permissions, e.g.:
+ * {
+ *     meetingChat: 'free' | 'publicOnly' | 'privateToHost' | 'muted',
+ *     lobbyChat: 'privateToHost' | 'muted'
+ * }
+ *
+ * {
+ *     type: SET_CHAT_PERMISSIONS,
+ *     payload: {
+ *         meetingChat: 'publicOnly',
+ *         lobbyChat: 'privateToHost'
+ *     }
+ * }
+ */
+export const SET_CHAT_PERMISSIONS = 'SET_CHAT_PERMISSIONS';
+
+/**
  * The type of action which signals the update a _isPollsTabFocused.
  *
  * {
@@ -115,23 +139,23 @@ export const SET_IS_POLL_TAB_FOCUSED = 'SET_IS_POLL_TAB_FOCUSED';
  *     type: SET_LOBBY_CHAT_RECIPIENT
  * }
  */
- export const SET_LOBBY_CHAT_RECIPIENT = 'SET_LOBBY_CHAT_RECIPIENT';
+export const SET_LOBBY_CHAT_RECIPIENT = 'SET_LOBBY_CHAT_RECIPIENT';
 
- /**
-  * The type of action sets the state of lobby messaging status.
-  *
-  * {
-  *     type: SET_LOBBY_CHAT_ACTIVE_STATE
-  *     payload: boolean
-  * }
-  */
- export const SET_LOBBY_CHAT_ACTIVE_STATE = 'SET_LOBBY_CHAT_ACTIVE_STATE';
+/**
+ * The type of action sets the state of lobby messaging status.
+ *
+ * {
+ *     type: SET_LOBBY_CHAT_ACTIVE_STATE
+ *     payload: boolean
+ * }
+ */
+export const SET_LOBBY_CHAT_ACTIVE_STATE = 'SET_LOBBY_CHAT_ACTIVE_STATE';
 
- /**
-  * The type of action removes the lobby messaging from participant.
-  *
-  * {
-  *     type: REMOVE_LOBBY_CHAT_PARTICIPANT
-  * }
-  */
- export const REMOVE_LOBBY_CHAT_PARTICIPANT = 'REMOVE_LOBBY_CHAT_PARTICIPANT';
+/**
+ * The type of action removes the lobby messaging from participant.
+ *
+ * {
+ *     type: REMOVE_LOBBY_CHAT_PARTICIPANT
+ * }
+ */
+export const REMOVE_LOBBY_CHAT_PARTICIPANT = 'REMOVE_LOBBY_CHAT_PARTICIPANT';

@@ -29,8 +29,8 @@ export const EMAIL_COMMAND = 'email';
 export const JITSI_CONFERENCE_URL_KEY = Symbol('url');
 
 export const TRIGGER_READY_TO_CLOSE_REASONS = {
-    'dialog.sessTerminatedReason': 'The meeting has been terminated',
-    'lobby.lobbyClosed': 'Lobby room closed.'
+  'dialog.sessTerminatedReason': '会议已经结束',
+  'lobby.lobbyClosed': '会议厅已关闭.',
 };
 
 /**

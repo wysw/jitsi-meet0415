@@ -40,7 +40,8 @@ import {
     OPEN_CHAT,
     SEND_MESSAGE,
     SEND_REACTION,
-    SET_IS_POLL_TAB_FOCUSED
+    SET_IS_POLL_TAB_FOCUSED,
+    SET_CHAT_PERMISSIONS
 } from './actionTypes';
 import { addMessage, addMessageReaction, clearMessages, closeChat, setPrivateMessageRecipient } from './actions.any';
 import { ChatPrivacyDialog } from './components';
@@ -193,10 +194,15 @@ MiddlewareRegistry.register(store => next => action => {
     case SEND_MESSAGE: {
         const state = store.getState();
         const conference = getCurrentConference(state);
-
         if (conference) {
-            // There may be cases when we intend to send a private message but we forget to set the
-            // recipient. This logic tries to mitigate this risk.
+            const { value, msg } = _checkChatPermissions(state , action);            
+            if(!value){
+                dispatch(showMessageNotification({
+                    title: '',
+                    description: msg
+                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+              return 
+            }
             const shouldSendPrivateMessageTo = _shouldSendPrivateMessageTo(state, action);
 
             const participantExists = shouldSendPrivateMessageTo
@@ -308,6 +314,19 @@ function _addChatMsgListener(conference: IJitsiConference, store: IStore) {
         // We don't register anything on web if we are in iAmRecorder mode
         return;
     }
+
+    const localParticipant = getLocalParticipant(store.getState()); // 获取当前用户信息
+    const participantId = localParticipant?.id; // 获取当前用户的 ID
+    conference.addCommandListener('chat-permissions', function({value}: any) {
+      const { permissions, from } = value ? JSON.parse(value) : {}        
+        // 例如，存储到 Redux 状态
+        if(from && participantId !== from && permissions){
+          store.dispatch({
+            type: SET_CHAT_PERMISSIONS,
+            payload: permissions
+        });
+        }        
+    });
 
     conference.on(
         JitsiConferenceEvents.MESSAGE_RECEIVED,
@@ -668,3 +687,70 @@ function _shouldSendPrivateMessageTo(state: IReduxState, action: AnyAction) {
 
     return undefined;
 }
+
+function _checkChatPermissions(
+    state: IReduxState,
+    action: AnyAction
+  ): { value: boolean; msg: string } {
+    // 获取状态中的聊天权限
+    const chatState = state['features/chat'];
+    debugger;
+    const { privateMessageRecipient, isLobbyChatActive, lobbyMessageRecipient } =
+      state['features/chat'];
+    const chatPermissions = chatState.chatPermissions; // 获取当前的聊天权限
+    const occupant = getLocalParticipant(state);
+    // 发送警告消息的返回函数
+    const sendWarning = (msg: string) => {
+      return { value: false, msg: msg }; // 返回不允许的消息和警告
+    };
+  
+    // 🚫 **1. 处理会议聊天权限**
+    if (!isLobbyChatActive) {
+      const chatMode = chatPermissions.meetingChat;
+  
+      if (chatMode === 'muted' && occupant?.role !== 'moderator') {
+        return sendWarning('会议已开启禁言模式，只有主持人可以发言！');
+      } else if (chatMode === 'publicOnly' && privateMessageRecipient) {
+        return sendWarning('会议仅允许公开聊天，私聊已被禁用！');
+      } else if (
+        chatMode === 'privateToHost' &&
+        !(privateMessageRecipient && privateMessageRecipient.role !== 'moderator')
+      ) {
+        return sendWarning('你只能私聊主持人，其他私聊已被禁用！');
+      }
+    } else {
+      const lobbyChatMode = chatPermissions.lobbyChat;
+  
+      let _lobbyMessageRecipient =
+        lobbyMessageRecipient &&
+        getParticipantById(state, lobbyMessageRecipient.id);
+      if (!_lobbyMessageRecipient) {
+        const shouldSendPrivateMessageTo = _shouldSendPrivateMessageTo(
+          state,
+          action
+        );
+        if (shouldSendPrivateMessageTo) {
+          _lobbyMessageRecipient = getParticipantById(
+            state,
+            shouldSendPrivateMessageTo
+          );
+        }
+      }
+  
+      if (lobbyChatMode === 'muted' && occupant?.role !== 'moderator') {
+        return sendWarning('等候室聊天已被禁用，只有主持人可以发言！');
+      } else if (
+        lobbyChatMode === 'privateToHost' &&
+        !(
+          (privateMessageRecipient &&
+            privateMessageRecipient.role === 'moderator') ||
+          (_lobbyMessageRecipient && _lobbyMessageRecipient.role === 'moderator')
+        )
+      ) {
+        return sendWarning('你只能私聊主持人，等候室的其他私聊已被禁用！');
+      }
+    }
+  
+    return { value: true, msg: '' }; // 如果符合权限条件，允许发送消息
+  }
+  

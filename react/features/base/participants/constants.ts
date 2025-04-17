@@ -64,10 +64,55 @@ export const PARTICIPANT_LEFT_SOUND_ID = 'PARTICIPANT_LEFT_SOUND';
  * @enum {string}
  */
 export const PARTICIPANT_ROLE = {
-    MODERATOR: 'moderator',
-    NONE: 'none',
-    PARTICIPANT: 'participant'
+  MODERATOR: 'moderator',
+  NONE: 'none',
+  PARTICIPANT: 'participant',
 };
+
+export enum TEXT_OVERFLOW_TYPES {
+  ELLIPSIS = 'ellipsis',
+  SCROLL_ON_HOVER = 'scroll-on-hover',
+}
+
+/**
+ * Meeting chat permissions for participants in the meeting.
+ */
+export enum PERMISSIONS_MEETING_CHAT {
+  /**
+   * Allow participants to freely chat with everyone.
+   */
+  FREE = 'free',
+
+  /**
+   * Only public chat is allowed, no private chats.
+   */
+  PUBLIC_ONLY = 'publicOnly',
+
+  /**
+   * Only private chat with the host is allowed.
+   */
+  PRIVATETO_HOST = 'privateToHost',
+
+  /**
+   * All participants are muted and cannot send messages.
+   */
+  MUTED = 'muted',
+}
+
+/**
+ * Lobby chat permissions for participants waiting in the lobby.
+ */
+export enum PERMISSIONS_LOBBY_CHAT {
+  /**
+   * Only private chat with the host is allowed in the lobby.
+   */
+  PRIVATETO_HOST = 'privateToHost',
+
+  /**
+   * All participants in the lobby are muted and cannot send messages.
+   */
+  MUTED = 'muted',
+}
 
 /**
  * The audio level at which the hand will be lowered if raised.
