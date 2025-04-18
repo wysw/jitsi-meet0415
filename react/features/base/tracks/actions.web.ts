@@ -18,6 +18,7 @@ import { openDialog } from '../dialog/actions';
 import { JitsiTrackErrors, JitsiTrackEvents, browser } from '../lib-jitsi-meet';
 import { createLocalTrack } from '../lib-jitsi-meet/functions.any';
 import { gumPending, setScreenshareMuted } from '../media/actions';
+import { hasScreenSharePermissions } from '../../chat/functions';
 import {
     CAMERA_FACING_MODE,
     MEDIA_TYPE,
@@ -130,6 +131,7 @@ async function _toggleScreenSharing(
     const conference = getCurrentConference(state);
     const localAudio = getLocalJitsiAudioTrack(state);
     const localScreenshare = getLocalDesktopTrack(state['features/base/tracks']);
+    const _hasScreenSharePermissions = hasScreenSharePermissions(state)
 
     // Toggle screenshare or audio-only share if the new state is not passed. Happens in the following two cases.
     // 1. ShareAudioDialog passes undefined when the user hits continue in the share audio demo modal.
@@ -137,9 +139,8 @@ async function _toggleScreenSharing(
     const enable = audioOnly
         ? enabled ?? !audioOnlySharing
         : enabled ?? !screenSharing;
-    const screensharingDetails: { sourceType?: string; } = {};
-
-    if (enable) {
+    const screensharingDetails: { sourceType?: string; } = {};   
+    if (enable && _hasScreenSharePermissions) {
         let tracks;
 
         // Spot proxy stream.
@@ -237,6 +238,14 @@ async function _toggleScreenSharing(
             desktopAudioTrack.dispose();
             dispatch(setScreenshareAudioTrack(null));
         }
+    }
+    if(!_hasScreenSharePermissions){
+        if(enabled){
+            dispatch(showNotification({
+                descriptionKey: 'notify.screenShareNoAllow',
+            }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
+        }       
+        return
     }
 
     if (audioOnly) {

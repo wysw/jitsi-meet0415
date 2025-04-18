@@ -1,5 +1,6 @@
 import { IReduxState, IStore } from '../../app/types';
 import { showNotification } from '../../notifications/actions';
+import { hasScreenSharePermissions } from '../../chat/functions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
 import JitsiMeetJS from '../lib-jitsi-meet';
 import { setScreenshareMuted } from '../media/actions';
@@ -21,12 +22,18 @@ export * from './actions.any';
 export function toggleScreensharing(enabled: boolean, _ignore1?: boolean, _ignore2?: any) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
-
-        if (enabled) {
+        const _hasScreenSharePermissions = hasScreenSharePermissions(state)
+        if (enabled && _hasScreenSharePermissions) {
             _startScreenSharing(dispatch, state);
         } else {
             dispatch(setScreenshareMuted(true));
         }
+        if(enabled && !_hasScreenSharePermissions){
+            dispatch(showNotification({
+                descriptionKey: 'notify.screenShareNoAllow',
+            }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
+        }
+        
     };
 }
 

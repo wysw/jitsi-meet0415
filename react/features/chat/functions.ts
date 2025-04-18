@@ -19,6 +19,7 @@ import { MESSAGE_TYPE_ERROR, MESSAGE_TYPE_LOCAL, TIMESTAMP_FORMAT } from './cons
 import {
   PERMISSIONS_MEETING_CHAT,
   PERMISSIONS_LOBBY_CHAT,
+  PERMISSIONS_MEETING_SCREEN_SHARE
 } from '../base/participants/constants';
 import { IMessage } from './types';
 import { toState } from '../base/redux/functions';
@@ -267,6 +268,16 @@ export function hasChatPermissions(state: IReduxState) {
   }
 
   return true; // 通过所有权限检查，允许发送消息
+}
+
+export function hasScreenSharePermissions(state: IReduxState) {
+  // 判断当前用户是否是主持人（主持人不受聊天权限限制）
+  if (isLocalParticipantModerator(state)) {
+    return true;
+  }
+  const { chatPermissions } =
+    state['features/chat'];    
+  return chatPermissions.meetingScreenShare === PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW; // 通过所有权限检查，允许发送消息
 }
 
 /**

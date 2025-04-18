@@ -40,6 +40,7 @@ import MuteEveryonesVideoDialog from '../../../video-menu/components/web/MuteEve
 import {
   PERMISSIONS_MEETING_CHAT,
   PERMISSIONS_LOBBY_CHAT,
+  PERMISSIONS_MEETING_SCREEN_SHARE
 } from '../../../base/participants/constants';
 import { isLocalParticipantModerator } from '../../../base/participants/functions';
 import { getChatPermissions } from '../../../chat/functions';
@@ -117,6 +118,16 @@ export const FooterContextMenu = ({
     },
     [dispatch]
   );
+  const handleMeetingScreenSharePermissionChange = useCallback(
+    (permission: string) => {
+      dispatch(
+        setChatPermissions({
+            meetingScreenShare: permission,
+        })
+      );
+    },
+    [dispatch]
+  );
   const handleLobbyChatPermissionChange = useCallback(
     (permission: string) => {
       dispatch(
@@ -148,6 +159,22 @@ export const FooterContextMenu = ({
   const openModeratorSettings = () =>
     dispatch(openSettingsDialog(SETTINGS_TABS.MODERATOR));
   const perChatActions = [
+      {
+      accessibilityLabel: t('participantsPane.actions.allowScreenShare'),
+      className: classes.indentedLabel,
+      id: 'participantsPane.actions.allowScreenShare',
+      icon:
+      chatPermissions.meetingScreenShare === PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW &&
+        IconCheck,
+      onClick: () =>
+        handleMeetingScreenSharePermissionChange(
+          chatPermissions.meetingScreenShare ===
+          PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW
+          ? PERMISSIONS_MEETING_SCREEN_SHARE.PROHIBITED
+          : PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW
+      ),
+      text: t('participantsPane.actions.allowScreenShare'),
+    },
     {
       accessibilityLabel: t(
         'participantsPane.actions.allowPrivateChatWithModerator'

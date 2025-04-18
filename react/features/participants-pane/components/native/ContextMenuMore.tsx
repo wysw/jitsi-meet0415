@@ -29,7 +29,7 @@ import { LOWER_HAND_MESSAGE } from '../../../base/tracks/constants';
 import MuteEveryonesVideoDialog
     from '../../../video-menu/components/native/MuteEveryonesVideoDialog';
 
-import { PERMISSIONS_MEETING_CHAT, PERMISSIONS_LOBBY_CHAT } from '../../../base/participants/constants';
+import { PERMISSIONS_MEETING_CHAT, PERMISSIONS_LOBBY_CHAT,PERMISSIONS_MEETING_SCREEN_SHARE } from '../../../base/participants/constants';
 import { getChatPermissions } from '../../../chat/functions';
 
 import styles from './styles';
@@ -57,6 +57,16 @@ export const ContextMenuMore = () => {
       dispatch(
         setChatPermissions({
           meetingChat: permission,
+        })
+      );
+    },
+    [dispatch]
+  );
+  const handleMeetingScreenSharePermissionChange = useCallback(
+    (permission: string) => {
+      dispatch(
+        setChatPermissions({
+            meetingScreenShare: permission,
         })
       );
     },
@@ -147,6 +157,25 @@ export const ContextMenuMore = () => {
                             {t('participantsPane.actions.videoModeration')}
                         </Text>
                     </TouchableOpacity>}                
+                    <TouchableOpacity
+                        onPress={() =>
+                            handleMeetingScreenSharePermissionChange(
+                            chatPermissions.meetingScreenShare ===
+                            PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW
+                            ? PERMISSIONS_MEETING_SCREEN_SHARE.PROHIBITED
+                            : PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW
+                        )
+                        }
+                        style={styles.contextMenuItem as ViewStyle}
+                    >
+                        {chatPermissions.meetingScreenShare === PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW && (
+                        <Icon size={24} src={IconCheck} />
+                        )}
+
+                        <Text style={styles.contextMenuItemText}>
+                        {t('participantsPane.actions.allowScreenShare')}
+                        </Text>
+                    </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() =>
                         handleLobbyChatPermissionChange(

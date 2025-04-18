@@ -98,6 +98,13 @@ export enum PERMISSIONS_MEETING_CHAT {
    */
   MUTED = 'muted',
 }
+/**
+ * Meeting chat permissions for SCREEN_SHARE
+ */
+export enum PERMISSIONS_MEETING_SCREEN_SHARE {
+  ALLOW  = 'allow',
+  PROHIBITED= 'prohibited',
+}
 
 /**
  * Lobby chat permissions for participants waiting in the lobby.

@@ -821,6 +821,7 @@
     "screenShareNoAudio": "在窗口选择屏幕时未选中共享音频框。",
     "screenShareNoAudioTitle": "无法共享计算机音频！",
     "screenSharingAudioOnlyDescription": "请注意，通过共享屏幕会影响“最佳性能”模式，并且将使用占用更多网络。",
+    "screenShareNoAllow": "主播已禁用共享屏幕！",
     "screenSharingAudioOnlyTitle": "“最佳性能”模式",
     "selfViewTitle": "你随时可以在设置中取消隐藏本人视图",
     "somebody": "某人",
@@ -875,7 +876,8 @@
       "onlyPublicComments": "仅允许公开聊天",
       "chatWithHostOnly": "仅允许私聊主持人",
       "allMembersMuted": "全体成员禁言（房主跟管理除外）",
-      "allowPrivateChatWithModerator": "允许等候室成员私聊主持人"
+      "allowPrivateChatWithModerator": "允许等候室成员私聊主持人",
+      "allowScreenShare": "允许共享屏幕"
     },
     "close": "关闭",
     "headings": {

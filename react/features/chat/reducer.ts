@@ -2,6 +2,7 @@ import { ILocalParticipant, IParticipant } from '../base/participants/types';
 import {
   PERMISSIONS_MEETING_CHAT,
   PERMISSIONS_LOBBY_CHAT,
+  PERMISSIONS_MEETING_SCREEN_SHARE
 } from '../base/participants/constants';
 
 import ReducerRegistry from '../base/redux/ReducerRegistry';
@@ -37,6 +38,7 @@ const DEFAULT_STATE = {
   chatPermissions: {
     meetingChat: PERMISSIONS_MEETING_CHAT.MUTED, // 默认允许自由聊天
     lobbyChat: PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST, // 默认允许等候室私聊主持人
+    meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE.PROHIBITED, // 默认允许等候室私聊主持人
   },
 };
 
@@ -56,18 +58,20 @@ export interface IChatState {
   chatPermissions: {
     meetingChat: PERMISSIONS_MEETING_CHAT;
     lobbyChat: PERMISSIONS_LOBBY_CHAT;
+    meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE;
   };
 }
 
 ReducerRegistry.register<IChatState>('features/chat', (state = DEFAULT_STATE, action): IChatState => {
     switch (action.type) {
       case SET_CHAT_PERMISSIONS: {
-        const { meetingChat, lobbyChat } = action.payload;
+        const { meetingChat, lobbyChat, meetingScreenShare } = action.payload;
         return {
           ...state,
           chatPermissions: {
             meetingChat: meetingChat || state.chatPermissions.meetingChat,
             lobbyChat: lobbyChat || state.chatPermissions.lobbyChat,
+            meetingScreenShare: meetingScreenShare || PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST
           },
         };
       }
