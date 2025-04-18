@@ -71,7 +71,7 @@ var interfaceConfig = {
    */
   HIDE_INVITE_MORE_HEADER: false,
 
-  JITSI_WATERMARK_LINK: 'https://jitsi.org',
+  JITSI_WATERMARK_LINK: 'live.ofmtvu.com',
 
   LANG_DETECTION: true, // Allow i18n to detect the system language
   LOCAL_THUMBNAIL_RATIO: 16 / 9, // 16:9
