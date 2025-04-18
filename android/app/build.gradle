@@ -38,9 +38,9 @@ android {
         }
 
         release {
-            storeFile file('release.keystore')
+            storeFile file('live_key.keystore')
             storePassword '1234567890'
-            keyAlias 'my-release-key'
+            keyAlias 'live_key'
             keyPassword '1234567890'
         }
     }
