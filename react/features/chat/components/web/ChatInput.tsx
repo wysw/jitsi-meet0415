@@ -9,6 +9,8 @@ import { IconFaceSmile, IconSend } from '../../../base/icons/svg';
 import Button from '../../../base/ui/components/web/Button';
 import Input from '../../../base/ui/components/web/Input';
 import { areSmileysDisabled, isSendGroupChatDisabled } from '../../functions';
+import { useSelector } from 'react-redux';
+import { getParticipantCount, isLocalParticipantModerator } from '../../../base/participants/functions';
 
 import SmileysPanel from './SmileysPanel';
 
@@ -123,6 +125,9 @@ class ChatInput extends Component<IProps, IState> {
      * @returns {ReactElement}
      */
     override render() {
+        const participantCount = useSelector(getParticipantCount);
+        const isModerator = useSelector(isLocalParticipantModerator);
+        const _isModerator  = isModerator || participantCount === 1
         return (
             <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>
                 <div id = 'chat-input' >
@@ -144,7 +149,8 @@ class ChatInput extends Component<IProps, IState> {
                         maxRows = { 5 }
                         onChange = { this._onMessageChange }
                         onKeyPress = { this._onDetectSubmit }
-                        placeholder = { this.props.t('chat.messagebox') }
+                        placeholder = {  _isModerator ? this.props.t('chat.messagebox') : '当前聊天室禁止发言' }
+                        disabled={ !_isModerator }
                         ref = { this._textArea }
                         textarea = { true }
                         value = { this.state.message } />

@@ -107,7 +107,9 @@ export const FooterContextMenu = ({
   const isAudioModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
   const isVideoModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.VIDEO));
   const isBreakoutRoom = useSelector(isInBreakoutRoom);
-
+  const participantCount = useSelector(getParticipantCount);  
+  const isModerator = useSelector(isLocalParticipantModerator);
+  
   const handleChatPermissionChange = useCallback(
     (permission: string) => {
       dispatch(
@@ -290,7 +292,7 @@ export const FooterContextMenu = ({
         ]}
       />
       {raisedHandsQueue.length !== 0 && <LowerHandButton />}
-      {!isBreakoutRoom && isModerationSupported && (
+      {!isBreakoutRoom && (isModerator || participantCount === 1) && (
         <ContextMenuItemGroup actions={actions}>
           <div className={classes.text}>
             <span>{t('participantsPane.actions.allow')}</span>

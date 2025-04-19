@@ -83,9 +83,9 @@ export const ContextMenuMore = () => {
     [dispatch]
   );
 
-    const allModerators = useSelector(isEveryoneModerator);
+    
     const participantCount = useSelector(getParticipantCount);
-
+    const isModerator = useSelector(isLocalParticipantModerator);
     const isAudioModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
     const isVideoModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.VIDEO));
 
@@ -156,7 +156,9 @@ export const ContextMenuMore = () => {
                         <Text style = { styles.contextMenuItemText }>
                             {t('participantsPane.actions.videoModeration')}
                         </Text>
-                    </TouchableOpacity>}                
+                    </TouchableOpacity>}    
+                    </>} 
+                {(isModerator || participantCount === 1) && <>
                     <TouchableOpacity
                         onPress={() =>
                             handleMeetingScreenSharePermissionChange(
