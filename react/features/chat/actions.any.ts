@@ -7,21 +7,22 @@ import { IParticipant } from '../base/participants/types';
 import { LOBBY_CHAT_INITIALIZED } from '../lobby/constants';
 
 import {
-  ADD_MESSAGE,
-  SET_CHAT_PERMISSIONS,
-  ADD_MESSAGE_REACTION,
-  CLEAR_MESSAGES,
-  CLOSE_CHAT,
-  EDIT_MESSAGE,
-  REMOVE_LOBBY_CHAT_PARTICIPANT,
-  SEND_MESSAGE,
-  SEND_REACTION,
-  SET_IS_POLL_TAB_FOCUSED,
-  SET_LOBBY_CHAT_ACTIVE_STATE,
-  SET_LOBBY_CHAT_RECIPIENT,
-  SET_PRIVATE_MESSAGE_RECIPIENT,
+    ADD_MESSAGE,
+    SET_CHAT_PERMISSIONS,
+    ADD_MESSAGE_REACTION,
+    CLEAR_MESSAGES,
+    CLOSE_CHAT,
+    EDIT_MESSAGE,
+    OPEN_CHAT,
+    REMOVE_LOBBY_CHAT_PARTICIPANT,
+    SEND_MESSAGE,
+    SEND_REACTION,
+    SET_FOCUSED_TAB,
+    SET_LOBBY_CHAT_ACTIVE_STATE,
+    SET_LOBBY_CHAT_RECIPIENT,
+    SET_PRIVATE_MESSAGE_RECIPIENT
 } from './actionTypes';
-
+import { ChatTabs } from './constants';
 import logger from '../app/logger';
 
 /**
@@ -50,10 +51,10 @@ import logger from '../app/logger';
  * }}
  */
 export function addMessage(messageDetails: Object) {
-  return {
-    type: ADD_MESSAGE,
-    ...messageDetails,
-  };
+    return {
+        type: ADD_MESSAGE,
+        ...messageDetails
+    };
 }
 // 定义更新聊天权限的 action creator
 export function setChatPermissions(permissionsObj: any) {
@@ -112,10 +113,10 @@ export function setChatPermissions(permissionsObj: any) {
  * }}
  */
 export function addMessageReaction(reactionDetails: Object) {
-  return {
-    type: ADD_MESSAGE_REACTION,
+    return {
+        type: ADD_MESSAGE_REACTION,
         ...reactionDetails
-  };
+    };
 }
 
 /**
@@ -129,10 +130,10 @@ export function addMessageReaction(reactionDetails: Object) {
  * }}
  */
 export function editMessage(message: Object) {
-  return {
-    type: EDIT_MESSAGE,
+    return {
+        type: EDIT_MESSAGE,
         message
-  };
+    };
 }
 
 /**
@@ -143,9 +144,9 @@ export function editMessage(message: Object) {
  * }}
  */
 export function clearMessages() {
-  return {
+    return {
         type: CLEAR_MESSAGES
-  };
+    };
 }
 
 /**
@@ -156,9 +157,9 @@ export function clearMessages() {
  * }}
  */
 export function closeChat() {
-  return {
+    return {
         type: CLOSE_CHAT
-  };
+    };
 }
 
 /**
@@ -173,11 +174,11 @@ export function closeChat() {
  * }}
  */
 export function sendMessage(message: string, ignorePrivacy = false) {
-  return {
-    type: SEND_MESSAGE,
-    ignorePrivacy,
+    return {
+        type: SEND_MESSAGE,
+        ignorePrivacy,
         message
-  };
+    };
 }
 
 /**
@@ -190,12 +191,12 @@ export function sendMessage(message: string, ignorePrivacy = false) {
  */
 export function sendReaction(reaction: string, messageId: string, receiverId?: string) {
 
-  return {
-    type: SEND_REACTION,
-    reaction,
-    messageId,
+    return {
+        type: SEND_REACTION,
+        reaction,
+        messageId,
         receiverId
-  };
+    };
 }
 
 /**
@@ -208,24 +209,42 @@ export function sendReaction(reaction: string, messageId: string, receiverId?: s
  * }}
  */
 export function setPrivateMessageRecipient(participant?: Object) {
-  return {
-    participant,
+    return {
+        participant,
         type: SET_PRIVATE_MESSAGE_RECIPIENT
-  };
+    };
 }
 
 /**
- * Set the value of _isPollsTabFocused.
+ * Set the value of the currently focused tab.
  *
- * @param {boolean} isPollsTabFocused - The new value for _isPollsTabFocused.
- * @returns {Function}
+ * @param {string} tabId - The id of the currently focused tab.
+ * @returns {{
+ *    type: SET_FOCUSED_TAB,
+ *    tabId: string
+ * }}
  */
-export function setIsPollsTabFocused(isPollsTabFocused: boolean) {
-  return {
-    isPollsTabFocused,
-        type: SET_IS_POLL_TAB_FOCUSED
-  };
+export function setFocusedTab(tabId: ChatTabs) {
+    return {
+        type: SET_FOCUSED_TAB,
+        tabId
+    };
 }
+
+/**
+ * Opens the chat panel with CC tab active.
+ *
+ * @returns {Object} The redux action.
+ */
+export function openCCPanel() {
+    return async (dispatch: IStore['dispatch']) => {
+        dispatch(setFocusedTab(ChatTabs.CLOSED_CAPTIONS));
+        dispatch({
+            type: OPEN_CHAT
+        });
+    };
+}
+
 
 /**
  * Initiates the sending of messages between a moderator and a lobby attendee.
@@ -236,32 +255,32 @@ export function setIsPollsTabFocused(isPollsTabFocused: boolean) {
  * @returns {Function}
  */
 export function onLobbyChatInitialized(lobbyChatInitializedInfo: { attendee: IParticipant; moderator: IParticipant; }) {
-  return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-    const state = getState();
-    const conference = getCurrentConference(state);
+    return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+        const state = getState();
+        const conference = getCurrentConference(state);
 
-    const lobbyLocalId = conference?.myLobbyUserId();
+        const lobbyLocalId = conference?.myLobbyUserId();
 
-    if (!lobbyLocalId) {
-      return;
-    }
+        if (!lobbyLocalId) {
+            return;
+        }
 
-    if (lobbyChatInitializedInfo.moderator.id === lobbyLocalId) {
-      dispatch({
-        type: SET_LOBBY_CHAT_RECIPIENT,
-        participant: lobbyChatInitializedInfo.attendee,
+        if (lobbyChatInitializedInfo.moderator.id === lobbyLocalId) {
+            dispatch({
+                type: SET_LOBBY_CHAT_RECIPIENT,
+                participant: lobbyChatInitializedInfo.attendee,
                 open: true
-      });
-    }
+            });
+        }
 
-    if (lobbyChatInitializedInfo.attendee.id === lobbyLocalId) {
-      return dispatch({
-        type: SET_LOBBY_CHAT_RECIPIENT,
-        participant: lobbyChatInitializedInfo.moderator,
+        if (lobbyChatInitializedInfo.attendee.id === lobbyLocalId) {
+            return dispatch({
+                type: SET_LOBBY_CHAT_RECIPIENT,
+                participant: lobbyChatInitializedInfo.moderator,
                 open: false
-      });
-    }
-  };
+            });
+        }
+    };
 }
 
 /**
@@ -272,10 +291,10 @@ export function onLobbyChatInitialized(lobbyChatInitializedInfo: { attendee: IPa
  * @returns {Object}
  */
 export function setLobbyChatActiveState(value: boolean) {
-  return {
-    type: SET_LOBBY_CHAT_ACTIVE_STATE,
+    return {
+        type: SET_LOBBY_CHAT_ACTIVE_STATE,
         payload: value
-  };
+    };
 }
 
 /**
@@ -287,10 +306,10 @@ export function setLobbyChatActiveState(value: boolean) {
  * @returns {Object}
  */
 export function removeLobbyChatParticipant(removeLobbyChatMessages?: boolean) {
-  return {
-    type: REMOVE_LOBBY_CHAT_PARTICIPANT,
+    return {
+        type: REMOVE_LOBBY_CHAT_PARTICIPANT,
         removeLobbyChatMessages
-  };
+    };
 }
 
 /**
@@ -302,48 +321,48 @@ export function removeLobbyChatParticipant(removeLobbyChatMessages?: boolean) {
  * @returns {Object}
  */
 export function handleLobbyChatInitialized(participantId: string) {
-  return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-    if (!participantId) {
-      return;
-    }
-    const state = getState();
-    const conference = state['features/base/conference'].conference;
-    const { knockingParticipants } = state['features/lobby'];
-    const { lobbyMessageRecipient } = state['features/chat'];
-    const me = getLocalParticipant(state);
-    const lobbyLocalId = conference?.myLobbyUserId();
+    return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+        if (!participantId) {
+            return;
+        }
+        const state = getState();
+        const conference = state['features/base/conference'].conference;
+        const { knockingParticipants } = state['features/lobby'];
+        const { lobbyMessageRecipient } = state['features/chat'];
+        const me = getLocalParticipant(state);
+        const lobbyLocalId = conference?.myLobbyUserId();
 
 
-    if (lobbyMessageRecipient && lobbyMessageRecipient.id === participantId) {
-      return dispatch(setLobbyChatActiveState(true));
-    }
+        if (lobbyMessageRecipient && lobbyMessageRecipient.id === participantId) {
+            return dispatch(setLobbyChatActiveState(true));
+        }
 
         const attendee = knockingParticipants.find(p => p.id === participantId);
 
-    if (attendee && attendee.chattingWithModerator === lobbyLocalId) {
-      return dispatch({
-        type: SET_LOBBY_CHAT_RECIPIENT,
-        participant: attendee,
+        if (attendee && attendee.chattingWithModerator === lobbyLocalId) {
+            return dispatch({
+                type: SET_LOBBY_CHAT_RECIPIENT,
+                participant: attendee,
                 open: true
-      });
-    }
+            });
+        }
 
-    if (!attendee) {
-      return;
-    }
+        if (!attendee) {
+            return;
+        }
 
         const payload = { type: LOBBY_CHAT_INITIALIZED,
-      moderator: {
-        ...me,
-        name: 'Moderator',
+            moderator: {
+                ...me,
+                name: 'Moderator',
                 id: lobbyLocalId
-      },
+            },
             attendee };
 
-    // notify attendee privately.
-    conference?.sendLobbyMessage(payload, attendee.id);
+        // notify attendee privately.
+        conference?.sendLobbyMessage(payload, attendee.id);
 
-    // notify other moderators.
-    return conference?.sendLobbyMessage(payload);
-  };
+        // notify other moderators.
+        return conference?.sendLobbyMessage(payload);
+    };
 }

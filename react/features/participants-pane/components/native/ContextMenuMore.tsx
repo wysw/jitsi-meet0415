@@ -25,6 +25,7 @@ import { MEDIA_TYPE } from '../../../base/media/constants';
 import { raiseHand } from '../../../base/participants/actions';
 import { getParticipantCount, getRaiseHandsQueue, isEveryoneModerator, isLocalParticipantModerator }
     from '../../../base/participants/functions';
+    
 import { LOWER_HAND_MESSAGE } from '../../../base/tracks/constants';
 import MuteEveryonesVideoDialog
     from '../../../video-menu/components/native/MuteEveryonesVideoDialog';
@@ -50,7 +51,7 @@ export const ContextMenuMore = () => {
     }, [ dispatch ]);
     const { t } = useTranslation();
 
-    const isModerationSupported = useSelector((state: IReduxState) => isAvModerationSupported()(state));    
+    const isModerationSupported = useSelector((state: IReduxState) => isAvModerationSupported()(state));
     const chatPermissions = useSelector(getChatPermissions);
   const handleChatPermissionChange = useCallback(
     (permission: string) => {
@@ -156,7 +157,7 @@ export const ContextMenuMore = () => {
                         <Text style = { styles.contextMenuItemText }>
                             {t('participantsPane.actions.videoModeration')}
                         </Text>
-                    </TouchableOpacity>}    
+                    </TouchableOpacity>}
                     </>} 
                 {(isModerator || participantCount === 1) && <>
                     <TouchableOpacity
@@ -258,7 +259,7 @@ export const ContextMenuMore = () => {
                         {t('participantsPane.actions.allMembersMuted')}
                         </Text>
                     </TouchableOpacity>                                            
-                </>} 
+            </>}
         </BottomSheet>
     );
 };

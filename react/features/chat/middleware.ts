@@ -40,12 +40,13 @@ import {
     OPEN_CHAT,
     SEND_MESSAGE,
     SEND_REACTION,
-    SET_IS_POLL_TAB_FOCUSED,
+    SET_FOCUSED_TAB,
     SET_CHAT_PERMISSIONS
 } from './actionTypes';
 import { addMessage, addMessageReaction, clearMessages, closeChat, setPrivateMessageRecipient } from './actions.any';
 import { ChatPrivacyDialog } from './components';
 import {
+    ChatTabs,
     INCOMING_MSG_SOUND_ID,
     LOBBY_CHAT_MESSAGE,
     MESSAGE_TYPE_ERROR,
@@ -104,15 +105,15 @@ MiddlewareRegistry.register(store => next => action => {
         break;
 
     case CLOSE_CHAT: {
-        const isPollTabOpen = getState()['features/chat'].isPollsTabFocused;
+        const { focusedTab } = getState()['features/chat'];
 
-        unreadCount = 0;
+        if (focusedTab === ChatTabs.CHAT) {
+            unreadCount = 0;
 
-        if (typeof APP !== 'undefined') {
-            APP.API.notifyChatUpdated(unreadCount, false);
-        }
-
-        if (isPollTabOpen) {
+            if (typeof APP !== 'undefined') {
+                APP.API.notifyChatUpdated(unreadCount, false);
+            }
+        } else if (focusedTab === ChatTabs.POLLS) {
             dispatch(resetNbUnreadPollsMessages());
         }
         break;
@@ -162,38 +163,41 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
+    case SET_FOCUSED_TAB:
     case OPEN_CHAT: {
-        unreadCount = 0;
+        const focusedTab = action.tabId || getState()['features/chat'].focusedTab;
 
-        if (typeof APP !== 'undefined') {
-            APP.API.notifyChatUpdated(unreadCount, true);
-        }
+        if (focusedTab === ChatTabs.CHAT) {
+            unreadCount = 0;
 
-        const { privateMessageRecipient } = store.getState()['features/chat'];
-
-        if (
-            isSendGroupChatDisabled(store.getState())
-            && privateMessageRecipient
-            && !action.participant
-        ) {
-            const participant = getParticipantById(store.getState(), privateMessageRecipient.id);
-
-            if (participant) {
-                action.participant = participant;
+            if (typeof APP !== 'undefined') {
+                APP.API.notifyChatUpdated(unreadCount, true);
             }
+
+            const { privateMessageRecipient } = store.getState()['features/chat'];
+
+            if (
+                isSendGroupChatDisabled(store.getState())
+                && privateMessageRecipient
+                && !action.participant
+            ) {
+                const participant = getParticipantById(store.getState(), privateMessageRecipient.id);
+
+                if (participant) {
+                    action.participant = participant;
+                }
+            }
+        } else if (focusedTab === ChatTabs.POLLS) {
+            dispatch(resetNbUnreadPollsMessages());
         }
 
-        break;
-    }
-
-    case SET_IS_POLL_TAB_FOCUSED: {
-        dispatch(resetNbUnreadPollsMessages());
         break;
     }
 
     case SEND_MESSAGE: {
         const state = store.getState();
         const conference = getCurrentConference(state);
+
         if (conference) {
             const { value, msg } = _checkChatPermissions(state , action);            
             if(!value){
@@ -262,7 +266,6 @@ MiddlewareRegistry.register(store => next => action => {
                 lobbyChat: false
             }, false, true);
         }
-        break;
     }
     }
 
@@ -549,8 +552,7 @@ function _handleReceivedMessage({ dispatch, getState }: IStore,
 
     // skip message notifications on join (the messages having timestamp - coming from the history)
     const shouldShowNotification = userSelectedNotifications?.['notify.chatMessages']
-        && !hasRead && !isReaction
-        && (!timestamp || lobbyChat);
+        && !hasRead && !isReaction && (!timestamp || lobbyChat);
 
     if (isGuest) {
         displayNameToShow = `${displayNameToShow} ${i18next.t('visitors.chatIndicator')}`;
@@ -752,5 +754,4 @@ function _checkChatPermissions(
     }
   
     return { value: true, msg: '' }; // 如果符合权限条件，允许发送消息
-  }
-  
+}

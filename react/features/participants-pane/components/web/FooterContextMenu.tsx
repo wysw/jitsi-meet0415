@@ -7,19 +7,19 @@ import { IReduxState } from '../../../app/types';
 import { setChatPermissions } from '../../../chat/actions.any';
 
 import {
-  requestDisableAudioModeration,
-  requestDisableVideoModeration,
-  requestEnableAudioModeration,
+    requestDisableAudioModeration,
+    requestDisableVideoModeration,
+    requestEnableAudioModeration,
     requestEnableVideoModeration
 } from '../../../av-moderation/actions';
 import {
-  isEnabled as isAvModerationEnabled,
+    isEnabled as isAvModerationEnabled,
     isSupported as isAvModerationSupported
 } from '../../../av-moderation/functions';
 import { openDialog } from '../../../base/dialog/actions';
 import {
-  IconCheck,
-  IconDotsHorizontal,
+    IconCheck,
+    IconDotsHorizontal,
     IconVideoOff
 } from '../../../base/icons/svg';
 import { MEDIA_TYPE } from '../../../base/media/constants';
@@ -46,51 +46,51 @@ import { isLocalParticipantModerator } from '../../../base/participants/function
 import { getChatPermissions } from '../../../chat/functions';
 
 const useStyles = makeStyles()(theme => {
-  return {
-    contextMenu: {
-      bottom: 'auto',
-      margin: '0',
-      right: 0,
-      top: '-8px',
-      transform: 'translateY(-100%)',
+    return {
+        contextMenu: {
+            bottom: 'auto',
+            margin: '0',
+            right: 0,
+            top: '-8px',
+            transform: 'translateY(-100%)',
             width: '283px'
-    },
+        },
 
-    text: {
-      ...withPixelLineHeight(theme.typography.bodyShortRegular),
-      color: theme.palette.text02,
-      padding: '10px 16px',
-      height: '40px',
-      overflow: 'hidden',
-      display: 'flex',
-      alignItems: 'center',
+        text: {
+            ...withPixelLineHeight(theme.typography.bodyShortRegular),
+            color: theme.palette.text02,
+            padding: '10px 16px',
+            height: '40px',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
             boxSizing: 'border-box'
-    },
+        },
 
-    indentedLabel: {
-      '& > span': {
+        indentedLabel: {
+            '& > span': {
                 marginLeft: '36px'
             }
         }
-  };
+    };
 });
 
 interface IProps {
 
-  /**
-   * Whether the menu is open.
-   */
-  isOpen: boolean;
+    /**
+     * Whether the menu is open.
+     */
+    isOpen: boolean;
 
-  /**
-   * Drawer close callback.
-   */
-  onDrawerClose: (e?: React.MouseEvent) => void;
+    /**
+     * Drawer close callback.
+     */
+    onDrawerClose: (e?: React.MouseEvent) => void;
 
-  /**
-   * Callback for the mouse leaving this item.
-   */
-  onMouseLeave?: (e?: React.MouseEvent) => void;
+    /**
+     * Callback for the mouse leaving this item.
+     */
+    onMouseLeave?: (e?: React.MouseEvent) => void;
 }
 
 export const FooterContextMenu = ({
@@ -98,15 +98,15 @@ export const FooterContextMenu = ({
   onDrawerClose,
   onMouseLeave,
 }: IProps) => {
-  const dispatch = useDispatch();
-  const isModerationSupported = useSelector((state: IReduxState) => isAvModerationSupported()(state));
+    const dispatch = useDispatch();
+    const isModerationSupported = useSelector((state: IReduxState) => isAvModerationSupported()(state));
   // 当前是主持人
   const chatPermissions = useSelector(getChatPermissions);
-  const raisedHandsQueue = useSelector(getRaiseHandsQueue);
-  const isModeratorSettingsTabEnabled = useSelector(shouldShowModeratorSettings);
-  const isAudioModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
-  const isVideoModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.VIDEO));
-  const isBreakoutRoom = useSelector(isInBreakoutRoom);
+    const raisedHandsQueue = useSelector(getRaiseHandsQueue);
+    const isModeratorSettingsTabEnabled = useSelector(shouldShowModeratorSettings);
+    const isAudioModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
+    const isVideoModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.VIDEO));
+    const isBreakoutRoom = useSelector(isInBreakoutRoom);
   const participantCount = useSelector(getParticipantCount);  
   const isModerator = useSelector(isLocalParticipantModerator);
   
@@ -141,19 +141,19 @@ export const FooterContextMenu = ({
     [dispatch]
   );
 
-  const { t } = useTranslation();
+    const { t } = useTranslation();
 
-  const disableAudioModeration = useCallback(() => dispatch(requestDisableAudioModeration()), [ dispatch ]);
+    const disableAudioModeration = useCallback(() => dispatch(requestDisableAudioModeration()), [ dispatch ]);
 
-  const disableVideoModeration = useCallback(() => dispatch(requestDisableVideoModeration()), [ dispatch ]);
+    const disableVideoModeration = useCallback(() => dispatch(requestDisableVideoModeration()), [ dispatch ]);
 
-  const enableAudioModeration = useCallback(() => dispatch(requestEnableAudioModeration()), [ dispatch ]);
+    const enableAudioModeration = useCallback(() => dispatch(requestEnableAudioModeration()), [ dispatch ]);
 
-  const enableVideoModeration = useCallback(() => dispatch(requestEnableVideoModeration()), [ dispatch ]);
+    const enableVideoModeration = useCallback(() => dispatch(requestEnableVideoModeration()), [ dispatch ]);
 
-  const { classes } = useStyles();
+    const { classes } = useStyles();
 
-  const muteAllVideo = useCallback(
+    const muteAllVideo = useCallback(
     () => dispatch(openDialog(MuteEveryonesVideoDialog)),
     [dispatch]
   );
@@ -242,24 +242,24 @@ export const FooterContextMenu = ({
     actions.unshift(
       ...[
         {
-          accessibilityLabel: t('participantsPane.actions.audioModeration'),
-          className: isAudioModerationEnabled ? classes.indentedLabel : '',
-          id: isAudioModerationEnabled
-            ? 'participants-pane-context-menu-stop-audio-moderation'
-            : 'participants-pane-context-menu-start-audio-moderation',
-          icon: !isAudioModerationEnabled && IconCheck,
+            accessibilityLabel: t('participantsPane.actions.audioModeration'),
+            className: isAudioModerationEnabled ? classes.indentedLabel : '',
+            id: isAudioModerationEnabled
+                ? 'participants-pane-context-menu-stop-audio-moderation'
+                : 'participants-pane-context-menu-start-audio-moderation',
+            icon: !isAudioModerationEnabled && IconCheck,
           onClick: isAudioModerationEnabled
             ? disableAudioModeration
             : enableAudioModeration,
           text: t('participantsPane.actions.audioModeration'),
         },
         {
-          accessibilityLabel: t('participantsPane.actions.videoModeration'),
-          className: isVideoModerationEnabled ? classes.indentedLabel : '',
-          id: isVideoModerationEnabled
-            ? 'participants-pane-context-menu-stop-video-moderation'
-            : 'participants-pane-context-menu-start-video-moderation',
-          icon: !isVideoModerationEnabled && IconCheck,
+            accessibilityLabel: t('participantsPane.actions.videoModeration'),
+            className: isVideoModerationEnabled ? classes.indentedLabel : '',
+            id: isVideoModerationEnabled
+                ? 'participants-pane-context-menu-stop-video-moderation'
+                : 'participants-pane-context-menu-start-video-moderation',
+            icon: !isVideoModerationEnabled && IconCheck,
           onClick: isVideoModerationEnabled
             ? disableVideoModeration
             : enableVideoModeration,
@@ -269,8 +269,8 @@ export const FooterContextMenu = ({
     );
   }
 
-  return (
-    <ContextMenu
+    return (
+        <ContextMenu
       activateFocusTrap={true}
       className={classes.contextMenu}
       hidden={!isOpen}
@@ -278,37 +278,37 @@ export const FooterContextMenu = ({
       onDrawerClose={onDrawerClose}
       onMouseLeave={onMouseLeave}
     >
-      <ContextMenuItemGroup
+            <ContextMenuItemGroup
         actions={[
           {
             accessibilityLabel: t(
               'participantsPane.actions.stopEveryonesVideo'
             ),
-            id: 'participants-pane-context-menu-stop-video',
-            icon: IconVideoOff,
-            onClick: muteAllVideo,
+                    id: 'participants-pane-context-menu-stop-video',
+                    icon: IconVideoOff,
+                    onClick: muteAllVideo,
             text: t('participantsPane.actions.stopEveryonesVideo'),
           },
         ]}
       />
-      {raisedHandsQueue.length !== 0 && <LowerHandButton />}
-      {!isBreakoutRoom && (isModerator || participantCount === 1) && (
-        <ContextMenuItemGroup actions={actions}>
-          <div className={classes.text}>
-            <span>{t('participantsPane.actions.allow')}</span>
-          </div>
-        </ContextMenuItemGroup>
-      )}
-      {isModeratorSettingsTabEnabled && (
-        <ContextMenuItemGroup
+            {raisedHandsQueue.length !== 0 && <LowerHandButton />}
+            {!isBreakoutRoom && (isModerator || participantCount === 1)  && (
+                <ContextMenuItemGroup actions = { actions }>
+                    <div className = { classes.text }>
+                        <span>{t('participantsPane.actions.allow')}</span>
+                    </div>
+                </ContextMenuItemGroup>
+            )}
+            {isModeratorSettingsTabEnabled && (
+                <ContextMenuItemGroup
           actions={[ {
-              accessibilityLabel: t('participantsPane.actions.moreModerationControls'),
-              id: 'participants-pane-open-moderation-control-settings',
-              icon: IconDotsHorizontal,
-              onClick: openModeratorSettings,
-              text: t('participantsPane.actions.moreModerationControls')
+                        accessibilityLabel: t('participantsPane.actions.moreModerationControls'),
+                        id: 'participants-pane-open-moderation-control-settings',
+                        icon: IconDotsHorizontal,
+                        onClick: openModeratorSettings,
+                        text: t('participantsPane.actions.moreModerationControls')
             } ]} />
-      )}
-    </ContextMenu>
-  );
+            )}
+        </ContextMenu>
+    );
 };
