@@ -48,8 +48,8 @@
         </h2>
         <div class='unsupported-desktop-browser__description'>
             <div class='unsupported-desktop-browser__link link downloadChrome'>Chrome</div>
+            <div class='unsupported-desktop-browser__link link downloadQQ'>QQ浏览器</div>
             <div class='unsupported-desktop-browser__link link download360'>360浏览器</div>
-
         </div>
     </div>
 </body>
@@ -102,6 +102,24 @@
             // 桌面设备下载链接（Windows 或 Mac）
             const os = navigator.platform.toLowerCase();
             downloadLink = "https://browser.360.cn/"
+        }
+        // 跳转到下载链接
+        if (downloadLink) {
+            window.location.href = downloadLink;
+        }
+    });
+
+    // 绑定点击事件
+    var download360 = document.querySelector('.downloadQQ')
+    download360 && download360.addEventListener('click', function () {
+        let downloadLink;
+        if (isMobile() || isTablet()) {
+            // 手机设备下载链接（Android）
+            downloadLink = "https://browser.qq.com/"; 
+        } else if (isDesktop()) {
+            // 桌面设备下载链接（Windows 或 Mac）
+            const os = navigator.platform.toLowerCase();
+            downloadLink = "https://browser.qq.com/"
         }
         // 跳转到下载链接
         if (downloadLink) {
