@@ -30,5 +30,6 @@ export function shouldDisplayNotifications(stateful: IStateful) {
 export function arePollsDisabled(stateful: IStateful) {
     const state = toState(stateful);
 
-    return state['features/base/config']?.disablePolls || iAmVisitor(state);
+    // return state['features/base/config']?.disablePolls || iAmVisitor(state);
+    return true;
 }

@@ -29,6 +29,8 @@ interface IProps extends WithTranslation {
      */
     _isSendGroupChatDisabled: boolean;
 
+    _isModerator: any;
+
     /**
      * The id of the message recipient, if any.
      */
@@ -125,9 +127,7 @@ class ChatInput extends Component<IProps, IState> {
      * @returns {ReactElement}
      */
     override render() {
-        const participantCount = useSelector(getParticipantCount);
-        const isModerator = useSelector(isLocalParticipantModerator);
-        const _isModerator  = isModerator || participantCount === 1
+        
         return (
             <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>
                 <div id = 'chat-input' >
@@ -149,8 +149,8 @@ class ChatInput extends Component<IProps, IState> {
                         maxRows = { 5 }
                         onChange = { this._onMessageChange }
                         onKeyPress = { this._onDetectSubmit }
-                        placeholder = {  _isModerator ? this.props.t('chat.messagebox') : '当前聊天室禁止发言' }
-                        disabled={ !_isModerator }
+                        placeholder = {  this.props._isModerator ? this.props.t('chat.messagebox') : '当前聊天室禁止发言' }
+                        disabled={ !this.props._isModerator }
                         ref = { this._textArea }
                         textarea = { true }
                         value = { this.state.message } />
@@ -298,12 +298,16 @@ class ChatInput extends Component<IProps, IState> {
  */
 const mapStateToProps = (state: IReduxState) => {
     const { privateMessageRecipient } = state['features/chat'];
+    
     const isGroupChatDisabled = isSendGroupChatDisabled(state);
-
+    const participantCount = getParticipantCount(state);
+    const isModerator = isLocalParticipantModerator(state);
+    const _isModerator  = isModerator || participantCount === 1   
     return {
         _areSmileysDisabled: areSmileysDisabled(state),
         _privateMessageRecipientId: privateMessageRecipient?.id,
-        _isSendGroupChatDisabled: isGroupChatDisabled
+        _isSendGroupChatDisabled: isGroupChatDisabled,
+        _isModerator
     };
 };
 

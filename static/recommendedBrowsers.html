@@ -1,23 +1,160 @@
 <html>
+
 <head>
     <!--#include virtual="/base.html" -->
-    <link rel="stylesheet" href="css/all.css"/>
+    <link rel="stylesheet" href="css/all.css" />
     <!--#include virtual="/title.html" -->
+    <style>
+        .link {
+            color: rgb(0, 0, 238);
+            text-decoration: underline;
+            font-size: 16px;
+            width: 138px;
+            height: 48px;
+            border-radius: 24px;
+            margin: 20px;
+            height: 45px;
+            border-radius: 32px;
+            border: 1px solid rgba(0, 0, 238, 0.8);
+            display: -webkit-flex;
+            display: -moz-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-justify-content: center;
+            justify-content: center;
+            -webkit-align-items: center;
+            align-items: center;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: "Alibaba PuHuiTi";
+            font-size: 22px;
+            font-weight: 500;
+            line-height: 12px;
+        }
+        .unsupported-desktop-browser__description{
+            display: -ms-flexbox;
+            display: flex;
+        }
+    </style>
 </head>
+
+
+
 <body>
-    <div class = 'unsupported-desktop-browser'>
-        <h2 class = 'unsupported-desktop-browser__title'>
-            It looks like you're using a browser we don't fully support.
+    <div class='unsupported-desktop-browser'>
+        <h2 class='unsupported-desktop-browser__title'>
+            您的浏览器不支持，建议尝试更换如下浏览器
         </h2>
-        <p class ='unsupported-desktop-browser__description'>
-            We recommend to try with the latest version of&nbsp;
-            <a
-                className = 'unsupported-desktop-browser__link'
-                href = 'https://www.google.com/chrome/' >Chrome</a>&nbsp;or&nbsp;
-            <a
-                class = 'unsupported-desktop-browser__link'
-                href = 'https://www.chromium.org/'>Chromium</a>
-        </p>
+        <div class='unsupported-desktop-browser__description'>
+        <div class='unsupported-desktop-browser__link link downloadChrome'>Chrome</div>
+        <div class='unsupported-desktop-browser__link link download360'>360浏览器</div>
+
+            <!-- <a class='unsupported-desktop-browser__link' href='https://browser.360.cn/'>360电脑版</a>&nbsp;or&nbsp;
+            <a class='unsupported-desktop-browser__link' href='https://mse.360.cn/'>360手机版</a> -->
+
+
+        </div>
     </div>
 </body>
+<script>
+    function isMobile() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const mobileRegex = /(iphone|ipod|android|windows phone|blackberry|bb|mobile|webos)/i;
+        return mobileRegex.test(userAgent);
+    }
+
+    function isTablet() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        return /ipad|android(?!.*mobile)/i.test(userAgent);
+    }
+
+    function isDesktop() {
+        return !isMobile() && !isTablet();
+    }
+
+    // 设备类型检测并提供下载链接
+    var downloadChrome = document.querySelector('.downloadChrome')
+    downloadChrome && downloadChrome.addEventListener("click", function () {
+        let downloadLink;
+        if (isMobile()) {
+            // 移动设备下载链接（Android 或 iOS）
+            if (navigator.userAgent.toLowerCase().includes('android')) {
+                downloadLink = "https://play.google.com/store/apps/details?id=com.android.chrome";  // Android Chrome 下载
+            } else if (navigator.userAgent.toLowerCase().includes('iphone') || navigator.userAgent.toLowerCase().includes('ipad')) {
+                downloadLink = "https://apps.apple.com/us/app/google-chrome/id535886823";  // iOS Chrome 下载
+            } else {
+                alert('无法识别的移动设备');
+                return;
+            }
+        } else if (isTablet()) {
+            // 平板设备下载链接（Android 或 iOS）
+            if (navigator.userAgent.toLowerCase().includes('android')) {
+                downloadLink = "https://play.google.com/store/apps/details?id=com.android.chrome";  // Android 平板
+            } else if (navigator.userAgent.toLowerCase().includes('ipad')) {
+                downloadLink = "https://apps.apple.com/us/app/google-chrome/id535886823";  // iOS 平板
+            } else {
+                alert('无法识别的平板设备');
+                return;
+            }
+        } else if (isDesktop()) {
+            // 桌面设备下载链接（Windows 或 Mac）
+            const os = navigator.platform.toLowerCase();
+            if (os.includes('win')) {
+                downloadLink = "https://www.google.com/chrome/download";  // Windows 版本 Chrome 下载
+            } else if (os.includes('mac')) {
+                downloadLink = "https://www.google.com/chrome/download";  // Mac 版本 Chrome 下载
+            } else {
+                alert('无法识别的桌面操作系统');
+                return;
+            }
+        }
+
+        // 跳转到浏览器下载链接
+        if (downloadLink) {
+            window.location.href = downloadLink;
+        }
+    });
+
+
+    // 绑定点击事件
+     var download360 = document.querySelector('.download360')
+    download360 && download360.addEventListener('click', function() {
+      let downloadLink;
+
+      if (isMobile()) {
+        // 手机设备下载链接（Android）
+        if (navigator.userAgent.toLowerCase().includes('android')) {
+          downloadLink = "https://play.google.com/store/apps/details?id=com.qihoo.browser";  // Android 版 360 浏览器
+        } else {
+          alert('无法识别的手机设备');
+          return;
+        }
+      } else if (isTablet()) {
+        // 平板设备下载链接（Android 平板）
+        if (navigator.userAgent.toLowerCase().includes('android')) {
+          downloadLink = "https://play.google.com/store/apps/details?id=com.qihoo.browser";  // Android 平板 版 360 浏览器
+        } else {
+          alert('无法识别的平板设备');
+          return;
+        }
+      } else if (isDesktop()) {
+        // 桌面设备下载链接（Windows 或 Mac）
+        const os = navigator.platform.toLowerCase();
+        if (os.includes('win')) {
+          downloadLink = "https://browser.360.cn/";  // Windows 版 360 浏览器下载
+        } else if (os.includes('mac')) {
+          downloadLink = "https://browser.360.cn/";  // Mac 版 360 浏览器下载
+        } else {
+          alert('无法识别的桌面操作系统');
+          return;
+        }
+      }
+
+      // 跳转到下载链接
+      if (downloadLink) {
+        window.location.href = downloadLink;
+      }
+    });
+</script>
+
 </html>

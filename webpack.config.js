@@ -167,7 +167,7 @@ function getConfig(options = {}) {
                 loader: 'ts-loader',
                 options: {
                     configFile: 'tsconfig.web.json',
-                    transpileOnly: !isProduction // Skip type checking for dev builds.,
+                    transpileOnly: true // Skip type checking for dev builds.,
                 }
             } ]
         },

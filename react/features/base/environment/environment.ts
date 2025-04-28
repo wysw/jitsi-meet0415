@@ -100,10 +100,14 @@ export function isSupportedBrowser() {
  * @returns {boolean}
  */
 export function isSupportedMobileBrowser() {
-    return (Platform.OS === 'android' && browser.isSupportedAndroidBrowser())
+    return (Platform.OS === 'android' &&  !isUnSupportBrowser() && browser.isSupportedAndroidBrowser())
         || (Platform.OS === 'ios' && browser.isSupportedIOSBrowser());
 }
 
+
+export function isUnSupportBrowser() {
+  return /mi|quark|wukong|oppo|vivo|uc/i.test(String(browser._name).toLowerCase());
+}
 /**
  * Runs various browser checks to know if the current browser is found within
  * the list.
