@@ -105,8 +105,9 @@ export function isSupportedMobileBrowser() {
 }
 
 
-export function isUnSupportBrowser() {
-    return /mi|quark|wukong|oppo|vivo|uc/i.test(String(browser._name).toLowerCase());
+export function isUnSupportBrowser() {    
+    return /mi|quark||xiaomi/i.test(String(navigator.userAgent).toLowerCase());
+    // return /mi|quark|wukong|oppo|vivo|uc/i.test(String(browser._name).toLowerCase());
 }
 /**
  * Runs various browser checks to know if the current browser is found within
