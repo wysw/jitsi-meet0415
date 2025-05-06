@@ -37,14 +37,29 @@
         .header-text-title {
             text-align: center;
         }
+        .welcome-head{
+            background-image: $welcomeHeadeTitleBackground;
+            background-size: contain;
+            background-position: $welcomePageHeaderBackgroundPosition;
+            background-repeat: no-repeat;
+            height: 270px;
+            width: 100%;
+            margin: 16px;
+        }
 
         .welcome-cards-container {
             padding: 0;
+            margin-bottom: 170px;
+        }
+        @media screen and (max-width: 768px) {
+            .welcome-cards-container {
+                display: none;
+            }
         }
 
         &.without-content {
             .header {
-            height: 100%;
+                height: 96%;
             }
         }
 

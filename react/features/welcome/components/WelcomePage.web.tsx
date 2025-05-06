@@ -224,9 +224,13 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
                                 : null
                             }
             </div>
+            
                         <h1 className = 'header-text-title'>
                             会通
             </h1>
+            <div className='welcome-head'>
+
+            </div>
                         <span className = 'header-text-subtitle'>
               {t('welcomepage.headerSubtitle')}
             </span>
@@ -378,42 +382,18 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
 
     const { fDroidUrl, downloadLink: androidDownloadLink } = android;
 
-        return (<footer className = 'welcome-footer'>
-            <div className = 'welcome-footer-centered'>
-                <div className = 'welcome-footer-padded'>
-                    <div className = 'welcome-footer-row-block welcome-footer--row-1'>
-                        <div className = 'welcome-footer-row-1-text'>{t('welcomepage.jitsiOnMobile')}</div>
-                        <a
-                            className = 'welcome-badge'
-                            href = { iosDownloadLink }
-                            rel = 'noopener noreferrer'
-                            target = '_blank'>
-                <img
-                                alt = { t('welcomepage.mobileDownLoadLinkIos') }
-                                src = './images/app-store-badge.png' />
-              </a>
-                        <a
-                            className = 'welcome-badge'
-                            href = { androidDownloadLink }
-                            rel = 'noopener noreferrer'
-                            target = '_blank'>
-                <img
-                                alt = { t('welcomepage.mobileDownLoadLinkAndroid') }
-                                src = './images/google-play-badge.png' />
-              </a>
-                        <a
-                            className = 'welcome-badge'
-                            href = { fDroidUrl }
-                            rel = 'noopener noreferrer'
-                            target = '_blank'>
-                <img
-                                alt = { t('welcomepage.mobileDownLoadLinkFDroid') }
-                                src = './images/f-droid-badge.png' />
-              </a>
-            </div>
-          </div>
-        </div>
-        </footer>);
+        return 
+        // (<footer className = 'welcome-footer'>
+        //     <div className = 'welcome-footer-centered'>
+        //         <div className = 'welcome-footer-padded'>
+        //             <div className = 'welcome-footer-row-block welcome-footer--row-1'>
+        //                 <div className = 'welcome-footer-row-1-text'></div>
+              
+                     
+        //     </div>
+        //   </div>
+        // </div>
+        // </footer>);
   }
 
   /**
