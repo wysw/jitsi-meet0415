@@ -20,8 +20,8 @@ import {
 import { MEDIA_TYPE_TO_PENDING_STORE_KEY } from './constants';
 
 const initialState = {
-    audioModerationEnabled: false,
-    videoModerationEnabled: false,
+    audioModerationEnabled: true,
+    videoModerationEnabled: true,
     audioWhitelist: {},
     videoWhitelist: {},
     pendingAudio: [],

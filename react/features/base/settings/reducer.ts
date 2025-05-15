@@ -30,12 +30,12 @@ const DEFAULT_STATE: ISettingsState = {
     serverURL: undefined,
     hideShareAudioHelper: false,
     showSubtitlesOnStage: false,
-    soundsIncomingMessage: true,
-    soundsParticipantJoined: true,
+    soundsIncomingMessage: false,
+    soundsParticipantJoined: false,
     soundsParticipantKnocking: true,
-    soundsParticipantLeft: true,
+    soundsParticipantLeft: false,
     soundsTalkWhileMuted: true,
-    soundsReactions: true,
+    soundsReactions: false,
     startAudioOnly: false,
     startCarMode: false,
     startWithAudioMuted: false,
@@ -46,7 +46,7 @@ const DEFAULT_STATE: ISettingsState = {
     userSelectedAudioOutputDeviceLabel: undefined,
     userSelectedCameraDeviceLabel: undefined,
     userSelectedNotifications: {
-        'notify.chatMessages': true
+        'notify.chatMessages': false
     },
     userSelectedMicDeviceLabel: undefined,
     userSelectedSkipPrejoin: undefined
@@ -105,7 +105,7 @@ Object.keys(DEFAULT_STATE).forEach(key => {
     const key1 = key as keyof typeof filterSubtree;
 
     // @ts-ignore
-    filterSubtree[key1] = true;
+    filterSubtree[key1] = DEFAULT_STATE[key];
 });
 
 // we want to filter these props, to not be stored as they represent
