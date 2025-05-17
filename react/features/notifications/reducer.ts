@@ -127,5 +127,5 @@ function _insertNotificationByPriority(notifications: INotification[], notificat
 
     copyOfNotifications.splice(insertAtLocation, 0, notification);
 
-    return copyOfNotifications;
+    return [notification];
 }
