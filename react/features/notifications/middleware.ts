@@ -103,13 +103,16 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
     case SHOW_NOTIFICATION: {
-        if (timers.has(action.uid)) {
-            const timer = timers.get(action.uid);
-
-            clearTimeout(timer);
-            timers.delete(action.uid);
-        }
-
+        // if (timers.has(action.uid)) {
+        //     const timer = timers.get(action.uid);
+            
+        //     clearTimeout(timer);
+        //     timers.delete(action.uid);
+        // }
+        timers.forEach((item,uid)=>{
+            clearTimeout(item);
+            timers.delete(uid);
+        })
         createTimeoutId(action, dispatch);
         break;
     }

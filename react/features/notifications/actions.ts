@@ -216,34 +216,34 @@ const _throttledNotifyParticipantConnected = throttle((dispatch: IStore['dispatc
 
     let notificationProps;
 
-    if (joinedParticipantsCount >= 3) {
-        notificationProps = {
-            titleArguments: {
-                name: joinedParticipantsNames[0]
-            },
-            titleKey: 'notify.connectedThreePlusMembers'
-        };
-    } else if (joinedParticipantsCount === 2) {
-        notificationProps = {
-            titleArguments: {
-                first: joinedParticipantsNames[0],
-                second: joinedParticipantsNames[1]
-            },
-            titleKey: 'notify.connectedTwoMembers'
-        };
-    } else if (joinedParticipantsCount) {
-        notificationProps = {
-            titleArguments: {
-                name: joinedParticipantsNames[0]
-            },
-            titleKey: 'notify.connectedOneMember'
-        };
-    }
+    // if (joinedParticipantsCount >= 3) {
+    //     notificationProps = {
+    //         titleArguments: {
+    //             name: joinedParticipantsNames[0]
+    //         },
+    //         titleKey: 'notify.connectedThreePlusMembers'
+    //     };
+    // } else if (joinedParticipantsCount === 2) {
+    //     notificationProps = {
+    //         titleArguments: {
+    //             first: joinedParticipantsNames[0],
+    //             second: joinedParticipantsNames[1]
+    //         },
+    //         titleKey: 'notify.connectedTwoMembers'
+    //     };
+    // } else if (joinedParticipantsCount) {
+    //     notificationProps = {
+    //         titleArguments: {
+    //             name: joinedParticipantsNames[0]
+    //         },
+    //         titleKey: 'notify.connectedOneMember'
+    //     };
+    // }
 
-    if (notificationProps) {
-        dispatch(
-            showNotification(notificationProps, NOTIFICATION_TIMEOUT_TYPE.SHORT));
-    }
+    // if (notificationProps) {
+    //     dispatch(
+    //         showNotification(notificationProps, NOTIFICATION_TIMEOUT_TYPE.SHORT));
+    // }
 
     joinedParticipantsNames = [];
 
@@ -280,34 +280,34 @@ const _throttledNotifyParticipantLeft = throttle((dispatch: IStore['dispatch'], 
 
     let notificationProps;
 
-    if (leftParticipantsCount >= 3) {
-        notificationProps = {
-            titleArguments: {
-                name: leftParticipantsNames[0]
-            },
-            titleKey: 'notify.leftThreePlusMembers'
-        };
-    } else if (leftParticipantsCount === 2) {
-        notificationProps = {
-            titleArguments: {
-                first: leftParticipantsNames[0],
-                second: leftParticipantsNames[1]
-            },
-            titleKey: 'notify.leftTwoMembers'
-        };
-    } else if (leftParticipantsCount) {
-        notificationProps = {
-            titleArguments: {
-                name: leftParticipantsNames[0]
-            },
-            titleKey: 'notify.leftOneMember'
-        };
-    }
+    // if (leftParticipantsCount >= 3) {
+    //     notificationProps = {
+    //         titleArguments: {
+    //             name: leftParticipantsNames[0]
+    //         },
+    //         titleKey: 'notify.leftThreePlusMembers'
+    //     };
+    // } else if (leftParticipantsCount === 2) {
+    //     notificationProps = {
+    //         titleArguments: {
+    //             first: leftParticipantsNames[0],
+    //             second: leftParticipantsNames[1]
+    //         },
+    //         titleKey: 'notify.leftTwoMembers'
+    //     };
+    // } else if (leftParticipantsCount) {
+    //     notificationProps = {
+    //         titleArguments: {
+    //             name: leftParticipantsNames[0]
+    //         },
+    //         titleKey: 'notify.leftOneMember'
+    //     };
+    // }
 
-    if (notificationProps) {
-        dispatch(
-            showNotification(notificationProps, NOTIFICATION_TIMEOUT_TYPE.SHORT));
-    }
+    // if (notificationProps) {
+    //     dispatch(
+    //         showNotification(notificationProps, NOTIFICATION_TIMEOUT_TYPE.SHORT));
+    // }
 
     leftParticipantsNames = [];
 
