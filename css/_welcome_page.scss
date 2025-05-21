@@ -290,7 +290,7 @@ body.welcome-page {
     }
 
     @media screen and (max-width: 768px) {
-        .welcome-cards-container {
+        .welcome-cards-container,.watermark.leftwatermark {
             display: none;
         }
     }
