@@ -833,6 +833,7 @@ function _raiseHandUpdated({ dispatch, getState }: IStore, conference: IJitsiCon
     }
 
     if (raisedHandTimestamp) {
+        return 
         let notificationTitle;
         const participantName = getParticipantDisplayName(state, participantId);
         const { raisedHandsQueue } = state['features/base/participants'];

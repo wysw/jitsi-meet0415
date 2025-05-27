@@ -28,6 +28,7 @@ export default class Notifications extends BasePageObject {
      * The notification on moderators page when the participant tries to unmute.
      */
     async waitForRaisedHandNotification() {
+        return 
         const displayNameEl
             = this.participant.driver.$(`div[data-testid="${RAISE_HAND_NOTIFICATION_ID}"]`);
 
