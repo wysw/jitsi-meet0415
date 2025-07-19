@@ -169,6 +169,15 @@ class ChatInput extends Component<IProps, IState> {
      */
     override render() {
         const classes = withStyles.getClasses(this.props);
+        const hideInput = this.props._isSendGroupChatDisabled && !this.props._privateMessageRecipientId;
+
+        if (hideInput) {
+            return (
+                <div className = { classes.chatDisabled }>
+                    {this.props.t('chat.disabled')}
+                </div>
+            );
+        }
 
         return (
             <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>

@@ -157,7 +157,7 @@ export const ContextMenuMore = () => {
                             {t('participantsPane.actions.videoModeration')}
                         </Text>
                     </TouchableOpacity>}
-                    </>} 
+            </>}
                 {(isModerator || participantCount === 1) && <>
                     <TouchableOpacity
                         onPress={() =>

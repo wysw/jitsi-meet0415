@@ -241,33 +241,33 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: IProp
     if (isModerationSupported) {
         actions.unshift(...[
             {
-                accessibilityLabel: t('participantsPane.actions.audioModeration'),
-                className: isAudioModerationEnabled ? classes.indentedLabel : '',
-                id: isAudioModerationEnabled
-                    ? 'participants-pane-context-menu-stop-audio-moderation'
-                    : 'participants-pane-context-menu-start-audio-moderation',
-                icon: isAudioModerationEnabled ? IconCloseLarge : IconCheck,
-                onClick: isAudioModerationEnabled ? disableAudioModeration : enableAudioModeration,
-                text: t('participantsPane.actions.audioModeration')
-            }, {
-                accessibilityLabel: t('participantsPane.actions.videoModeration'),
-                className: isVideoModerationEnabled ? classes.indentedLabel : '',
-                id: isVideoModerationEnabled
-                    ? 'participants-pane-context-menu-stop-video-moderation'
-                    : 'participants-pane-context-menu-start-video-moderation',
-                icon: isVideoModerationEnabled ? IconCloseLarge : IconCheck,
-                onClick: isVideoModerationEnabled ? disableVideoModeration : enableVideoModeration,
-                text: t('participantsPane.actions.videoModeration')
-            }, {
-                accessibilityLabel: t('participantsPane.actions.desktopModeration'),
-                className: isDesktopModerationEnabled ? classes.indentedLabel : '',
-                id: isDesktopModerationEnabled
-                    ? 'participants-pane-context-menu-stop-desktop-moderation'
-                    : 'participants-pane-context-menu-start-desktop-moderation',
-                icon: isDesktopModerationEnabled ? IconCloseLarge : IconCheck,
-                onClick: isDesktopModerationEnabled ? disableDesktopModeration : enableDesktopModeration,
-                text: t('participantsPane.actions.desktopModeration')
-            }
+            accessibilityLabel: t('participantsPane.actions.audioModeration'),
+            className: isAudioModerationEnabled ? classes.indentedLabel : '',
+            id: isAudioModerationEnabled
+                ? 'participants-pane-context-menu-stop-audio-moderation'
+                : 'participants-pane-context-menu-start-audio-moderation',
+            icon: isAudioModerationEnabled ? IconCloseLarge : IconCheck,
+            onClick: isAudioModerationEnabled ? disableAudioModeration : enableAudioModeration,
+            text: t('participantsPane.actions.audioModeration')
+        }, {
+            accessibilityLabel: t('participantsPane.actions.videoModeration'),
+            className: isVideoModerationEnabled ? classes.indentedLabel : '',
+            id: isVideoModerationEnabled
+                ? 'participants-pane-context-menu-stop-video-moderation'
+                : 'participants-pane-context-menu-start-video-moderation',
+            icon: isVideoModerationEnabled ? IconCloseLarge : IconCheck,
+            onClick: isVideoModerationEnabled ? disableVideoModeration : enableVideoModeration,
+            text: t('participantsPane.actions.videoModeration')
+        }, {
+            accessibilityLabel: t('participantsPane.actions.desktopModeration'),
+            className: isDesktopModerationEnabled ? classes.indentedLabel : '',
+            id: isDesktopModerationEnabled
+                ? 'participants-pane-context-menu-stop-desktop-moderation'
+                : 'participants-pane-context-menu-start-desktop-moderation',
+            icon: isDesktopModerationEnabled ? IconCloseLarge : IconCheck,
+            onClick: isDesktopModerationEnabled ? disableDesktopModeration : enableDesktopModeration,
+            text: t('participantsPane.actions.desktopModeration')
+        }
         ]
     )}; 
     return (
