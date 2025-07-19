@@ -1,0 +1,839 @@
+diff --git a/node_modules/@giphy/js-analytics/dist/global.d.ts b/node_modules/@giphy/js-analytics/dist/global.d.ts
+deleted file mode 100644
+index 5298df7..0000000
+--- a/node_modules/@giphy/js-analytics/dist/global.d.ts
++++ /dev/null
+@@ -1,2 +0,0 @@
+-declare const _default: any;
+-export default _default;
+diff --git a/node_modules/@giphy/js-analytics/dist/global.js b/node_modules/@giphy/js-analytics/dist/global.js
+deleted file mode 100644
+index eaa03e6..0000000
+--- a/node_modules/@giphy/js-analytics/dist/global.js
++++ /dev/null
+@@ -1,5 +0,0 @@
+-"use strict";
+-Object.defineProperty(exports, "__esModule", { value: true });
+-/* istanbul ignore next */
+-exports.default = ((typeof window !== 'undefined' ? window : global) || {});
+-//# sourceMappingURL=global.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/global.js.map b/node_modules/@giphy/js-analytics/dist/global.js.map
+deleted file mode 100644
+index c8b731a..0000000
+--- a/node_modules/@giphy/js-analytics/dist/global.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"global.js","sourceRoot":"","sources":["../src/global.ts"],"names":[],"mappings":";;AAAA,0BAA0B;AAC1B,kBAAe,CAAC,CAAC,OAAO,MAAM,KAAK,WAAW,CAAC,CAAC,CAAC,MAAM,CAAC,CAAC,CAAC,MAAM,CAAC,IAAI,EAAE,CAAQ,CAAA"}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/index.cjs b/node_modules/@giphy/js-analytics/dist/index.cjs
+new file mode 100644
+index 0000000..9a5e878
+--- /dev/null
++++ b/node_modules/@giphy/js-analytics/dist/index.cjs
+@@ -0,0 +1,127 @@
++"use strict";
++var __defProp = Object.defineProperty;
++var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
++var __getOwnPropNames = Object.getOwnPropertyNames;
++var __getOwnPropSymbols = Object.getOwnPropertySymbols;
++var __hasOwnProp = Object.prototype.hasOwnProperty;
++var __propIsEnum = Object.prototype.propertyIsEnumerable;
++var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
++var __spreadValues = (a, b) => {
++  for (var prop in b || (b = {}))
++    if (__hasOwnProp.call(b, prop))
++      __defNormalProp(a, prop, b[prop]);
++  if (__getOwnPropSymbols)
++    for (var prop of __getOwnPropSymbols(b)) {
++      if (__propIsEnum.call(b, prop))
++        __defNormalProp(a, prop, b[prop]);
++    }
++  return a;
++};
++var __export = (target, all) => {
++  for (var name in all)
++    __defProp(target, name, { get: all[name], enumerable: true });
++};
++var __copyProps = (to, from, except, desc) => {
++  if (from && typeof from === "object" || typeof from === "function") {
++    for (let key of __getOwnPropNames(from))
++      if (!__hasOwnProp.call(to, key) && key !== except)
++        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
++  }
++  return to;
++};
++var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
++
++// src/index.ts
++var src_exports = {};
++__export(src_exports, {
++  mergeAttributes: () => merge_attributes_default,
++  pingback: () => pingback_default
++});
++module.exports = __toCommonJS(src_exports);
++
++// src/merge-attributes.ts
++var import_js_util = require("@giphy/js-util");
++var mergeAttribute = (attributes, newAttributes, key) => {
++  const result1 = (0, import_js_util.pick)(attributes, [key]);
++  const result2 = (0, import_js_util.pick)(newAttributes, [key]);
++  if (result1[key] && result2[key]) {
++    return __spreadValues(__spreadValues(__spreadValues({}, attributes), newAttributes), { [key]: result1[key] + ", " + result2[key] });
++  }
++  return __spreadValues(__spreadValues({}, attributes), newAttributes);
++};
++var merge_attributes_default = mergeAttribute;
++
++// src/pingback.ts
++var import_js_util3 = require("@giphy/js-util");
++var import_throttle_debounce = require("throttle-debounce");
++
++// src/global.ts
++var global_default = (typeof window !== "undefined" ? window : global) || {};
++
++// src/send-pingback.ts
++var import_js_util2 = require("@giphy/js-util");
++var _a;
++var environment = ((_a = global_default) == null ? void 0 : _a.GIPHY_PINGBACK_URL) || "https://pingback.giphy.com";
++var pingBackUrl = `${environment}/v2/pingback?apikey=l0HlIwPWyBBUDAUgM`;
++var sendPingback = (events) => {
++  const headers = (0, import_js_util2.getGiphySDKRequestHeaders)();
++  headers == null ? void 0 : headers.set("Content-Type", "application/json");
++  import_js_util2.Logger.debug(`Pingback session`, events);
++  if (!events.length) {
++    return new Promise((resolve) => resolve());
++  }
++  return fetch(pingBackUrl, {
++    method: "POST",
++    body: JSON.stringify({ events }),
++    headers
++  }).catch((error) => {
++    import_js_util2.Logger.warn(`pingbacks failing to post ${error}`);
++  });
++};
++
++// src/pingback.ts
++var queuedPingbackEvents = [];
++global_default.giphyRandomId = (0, import_js_util3.getPingbackId)();
++var loggedInUserId = "";
++function sendPingbacks() {
++  const sendEvents = [...queuedPingbackEvents];
++  queuedPingbackEvents = [];
++  sendPingback(sendEvents);
++}
++var debouncedPingbackEvent = (0, import_throttle_debounce.debounce)(1e3, sendPingbacks);
++var _a2, _b;
++(_b = (_a2 = global_default).addEventListener) == null ? void 0 : _b.call(_a2, "beforeunload", sendPingbacks);
++var pingback = ({
++  userId,
++  eventType,
++  actionType,
++  attributes,
++  queueEvents = true,
++  analyticsResponsePayload
++}) => {
++  loggedInUserId = userId ? String(userId) : loggedInUserId;
++  const newEvent = {
++    ts: Date.now(),
++    attributes,
++    action_type: actionType,
++    user_id: (0, import_js_util3.getPingbackId)(),
++    analytics_response_payload: analyticsResponsePayload
++  };
++  if (loggedInUserId) {
++    newEvent.logged_in_user_id = loggedInUserId;
++  }
++  if (newEvent.analytics_response_payload) {
++    newEvent.analytics_response_payload = `${newEvent.analytics_response_payload}${import_js_util3.Logger.ENABLED ? "&mode=verification" : ""}`;
++  }
++  if (eventType) {
++    newEvent.event_type = eventType;
++  }
++  queuedPingbackEvents.push(newEvent);
++  queueEvents ? debouncedPingbackEvent() : sendPingbacks();
++};
++var pingback_default = pingback;
++// Annotate the CommonJS export names for ESM import in node:
++0 && (module.exports = {
++  mergeAttributes,
++  pingback
++});
+diff --git a/node_modules/@giphy/js-analytics/dist/index.d.ts b/node_modules/@giphy/js-analytics/dist/index.d.ts
+index 56d7bf5..d0fd18c 100644
+--- a/node_modules/@giphy/js-analytics/dist/index.d.ts
++++ b/node_modules/@giphy/js-analytics/dist/index.d.ts
+@@ -1,3 +1,32 @@
+-export { default as mergeAttributes } from './merge-attributes';
+-export { default as pingback } from './pingback';
+-export * from './types';
++import { PingbackEventType } from '@giphy/js-types';
++
++type PingbackAttributes = {
++    [key: string]: string;
++};
++type Pingback = {
++    userId?: string | number;
++    eventType?: PingbackEventType;
++    actionType: PingbackActionType;
++    attributes?: PingbackAttributes;
++    queueEvents?: boolean;
++    analyticsResponsePayload: string;
++};
++type PingbackActionType = 'CLICK' | 'SEEN' | 'HOVER' | 'FAVORITE' | 'SENT' | 'START';
++type PingbackEvent = {
++    event_type?: PingbackEventType;
++    user_id?: string;
++    logged_in_user_id?: string;
++    action_type: string;
++    random_id?: string;
++    attributes: any;
++    ts: number;
++    analytics_response_payload?: string;
++};
++
++declare const mergeAttribute: (attributes: PingbackAttributes, newAttributes: PingbackAttributes, key: string) => {
++    [x: string]: string;
++};
++
++declare const pingback: ({ userId, eventType, actionType, attributes, queueEvents, analyticsResponsePayload, }: Pingback) => void;
++
++export { Pingback, PingbackActionType, PingbackAttributes, PingbackEvent, mergeAttribute as mergeAttributes, pingback };
+diff --git a/node_modules/@giphy/js-analytics/dist/index.js b/node_modules/@giphy/js-analytics/dist/index.js
+index 700c13e..0d8d153 100644
+--- a/node_modules/@giphy/js-analytics/dist/index.js
++++ b/node_modules/@giphy/js-analytics/dist/index.js
+@@ -1,26 +1,102 @@
+-"use strict";
+-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+-    if (k2 === undefined) k2 = k;
+-    var desc = Object.getOwnPropertyDescriptor(m, k);
+-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+-      desc = { enumerable: true, get: function() { return m[k]; } };
++var __defProp = Object.defineProperty;
++var __getOwnPropSymbols = Object.getOwnPropertySymbols;
++var __hasOwnProp = Object.prototype.hasOwnProperty;
++var __propIsEnum = Object.prototype.propertyIsEnumerable;
++var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
++var __spreadValues = (a, b) => {
++  for (var prop in b || (b = {}))
++    if (__hasOwnProp.call(b, prop))
++      __defNormalProp(a, prop, b[prop]);
++  if (__getOwnPropSymbols)
++    for (var prop of __getOwnPropSymbols(b)) {
++      if (__propIsEnum.call(b, prop))
++        __defNormalProp(a, prop, b[prop]);
+     }
+-    Object.defineProperty(o, k2, desc);
+-}) : (function(o, m, k, k2) {
+-    if (k2 === undefined) k2 = k;
+-    o[k2] = m[k];
+-}));
+-var __exportStar = (this && this.__exportStar) || function(m, exports) {
+-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
++  return a;
+ };
+-var __importDefault = (this && this.__importDefault) || function (mod) {
+-    return (mod && mod.__esModule) ? mod : { "default": mod };
++
++// src/merge-attributes.ts
++import { pick } from "@giphy/js-util";
++var mergeAttribute = (attributes, newAttributes, key) => {
++  const result1 = pick(attributes, [key]);
++  const result2 = pick(newAttributes, [key]);
++  if (result1[key] && result2[key]) {
++    return __spreadValues(__spreadValues(__spreadValues({}, attributes), newAttributes), { [key]: result1[key] + ", " + result2[key] });
++  }
++  return __spreadValues(__spreadValues({}, attributes), newAttributes);
++};
++var merge_attributes_default = mergeAttribute;
++
++// src/pingback.ts
++import { getPingbackId, Logger as Logger2 } from "@giphy/js-util";
++import { debounce } from "throttle-debounce";
++
++// src/global.ts
++var global_default = (typeof window !== "undefined" ? window : global) || {};
++
++// src/send-pingback.ts
++import { getGiphySDKRequestHeaders, Logger } from "@giphy/js-util";
++var _a;
++var environment = ((_a = global_default) == null ? void 0 : _a.GIPHY_PINGBACK_URL) || "https://pingback.giphy.com";
++var pingBackUrl = `${environment}/v2/pingback?apikey=l0HlIwPWyBBUDAUgM`;
++var sendPingback = (events) => {
++  const headers = getGiphySDKRequestHeaders();
++  headers == null ? void 0 : headers.set("Content-Type", "application/json");
++  Logger.debug(`Pingback session`, events);
++  if (!events.length) {
++    return new Promise((resolve) => resolve());
++  }
++  return fetch(pingBackUrl, {
++    method: "POST",
++    body: JSON.stringify({ events }),
++    headers
++  }).catch((error) => {
++    Logger.warn(`pingbacks failing to post ${error}`);
++  });
++};
++
++// src/pingback.ts
++var queuedPingbackEvents = [];
++global_default.giphyRandomId = getPingbackId();
++var loggedInUserId = "";
++function sendPingbacks() {
++  const sendEvents = [...queuedPingbackEvents];
++  queuedPingbackEvents = [];
++  sendPingback(sendEvents);
++}
++var debouncedPingbackEvent = debounce(1e3, sendPingbacks);
++var _a2, _b;
++(_b = (_a2 = global_default).addEventListener) == null ? void 0 : _b.call(_a2, "beforeunload", sendPingbacks);
++var pingback = ({
++  userId,
++  eventType,
++  actionType,
++  attributes,
++  queueEvents = true,
++  analyticsResponsePayload
++}) => {
++  loggedInUserId = userId ? String(userId) : loggedInUserId;
++  const newEvent = {
++    ts: Date.now(),
++    attributes,
++    action_type: actionType,
++    user_id: getPingbackId(),
++    analytics_response_payload: analyticsResponsePayload
++  };
++  if (loggedInUserId) {
++    newEvent.logged_in_user_id = loggedInUserId;
++  }
++  if (newEvent.analytics_response_payload) {
++    newEvent.analytics_response_payload = `${newEvent.analytics_response_payload}${Logger2.ENABLED ? "&mode=verification" : ""}`;
++  }
++  if (eventType) {
++    newEvent.event_type = eventType;
++  }
++  queuedPingbackEvents.push(newEvent);
++  queueEvents ? debouncedPingbackEvent() : sendPingbacks();
++};
++var pingback_default = pingback;
++export {
++  merge_attributes_default as mergeAttributes,
++  pingback_default as pingback
+ };
+-Object.defineProperty(exports, "__esModule", { value: true });
+-exports.pingback = exports.mergeAttributes = void 0;
+-var merge_attributes_1 = require("./merge-attributes");
+-Object.defineProperty(exports, "mergeAttributes", { enumerable: true, get: function () { return __importDefault(merge_attributes_1).default; } });
+-var pingback_1 = require("./pingback");
+-Object.defineProperty(exports, "pingback", { enumerable: true, get: function () { return __importDefault(pingback_1).default; } });
+-__exportStar(require("./types"), exports);
+-//# sourceMappingURL=index.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/index.js.map b/node_modules/@giphy/js-analytics/dist/index.js.map
+deleted file mode 100644
+index daac7c1..0000000
+--- a/node_modules/@giphy/js-analytics/dist/index.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"index.js","sourceRoot":"","sources":["../src/index.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;AAAA,uDAA+D;AAAtD,oIAAA,OAAO,OAAmB;AACnC,uCAAgD;AAAvC,qHAAA,OAAO,OAAY;AAC5B,0CAAuB"}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/merge-attributes.d.ts b/node_modules/@giphy/js-analytics/dist/merge-attributes.d.ts
+deleted file mode 100644
+index f6ae910..0000000
+--- a/node_modules/@giphy/js-analytics/dist/merge-attributes.d.ts
++++ /dev/null
+@@ -1,5 +0,0 @@
+-import { PingbackAttributes } from './types';
+-declare const mergeAttribute: (attributes: PingbackAttributes, newAttributes: PingbackAttributes, key: string) => {
+-    [x: string]: string;
+-};
+-export default mergeAttribute;
+diff --git a/node_modules/@giphy/js-analytics/dist/merge-attributes.js b/node_modules/@giphy/js-analytics/dist/merge-attributes.js
+deleted file mode 100644
+index d287c9b..0000000
+--- a/node_modules/@giphy/js-analytics/dist/merge-attributes.js
++++ /dev/null
+@@ -1,25 +0,0 @@
+-"use strict";
+-var __assign = (this && this.__assign) || function () {
+-    __assign = Object.assign || function(t) {
+-        for (var s, i = 1, n = arguments.length; i < n; i++) {
+-            s = arguments[i];
+-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+-                t[p] = s[p];
+-        }
+-        return t;
+-    };
+-    return __assign.apply(this, arguments);
+-};
+-Object.defineProperty(exports, "__esModule", { value: true });
+-var js_util_1 = require("@giphy/js-util");
+-var mergeAttribute = function (attributes, newAttributes, key) {
+-    var _a;
+-    var result1 = (0, js_util_1.pick)(attributes, [key]);
+-    var result2 = (0, js_util_1.pick)(newAttributes, [key]);
+-    if (result1[key] && result2[key]) {
+-        return __assign(__assign(__assign({}, attributes), newAttributes), (_a = {}, _a[key] = result1[key] + ', ' + result2[key], _a));
+-    }
+-    return __assign(__assign({}, attributes), newAttributes);
+-};
+-exports.default = mergeAttribute;
+-//# sourceMappingURL=merge-attributes.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/merge-attributes.js.map b/node_modules/@giphy/js-analytics/dist/merge-attributes.js.map
+deleted file mode 100644
+index 599992c..0000000
+--- a/node_modules/@giphy/js-analytics/dist/merge-attributes.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"merge-attributes.js","sourceRoot":"","sources":["../src/merge-attributes.ts"],"names":[],"mappings":";;;;;;;;;;;;;AAAA,0CAAqC;AAGrC,IAAM,cAAc,GAAG,UAAC,UAA8B,EAAE,aAAiC,EAAE,GAAW;;IAClG,IAAM,OAAO,GAAG,IAAA,cAAI,EAAC,UAAU,EAAE,CAAC,GAAG,CAAC,CAAC,CAAA;IACvC,IAAM,OAAO,GAAG,IAAA,cAAI,EAAC,aAAa,EAAE,CAAC,GAAG,CAAC,CAAC,CAAA;IAC1C,IAAI,OAAO,CAAC,GAAG,CAAC,IAAI,OAAO,CAAC,GAAG,CAAC,EAAE;QAC9B,sCAAY,UAAU,GAAK,aAAa,aAAO,GAAC,GAAG,IAAG,OAAO,CAAC,GAAG,CAAC,GAAG,IAAI,GAAG,OAAO,CAAC,GAAG,CAAC,OAAI;KAC/F;IACD,6BAAY,UAAU,GAAK,aAAa,EAAE;AAC9C,CAAC,CAAA;AAED,kBAAe,cAAc,CAAA"}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/pingback.d.ts b/node_modules/@giphy/js-analytics/dist/pingback.d.ts
+deleted file mode 100644
+index 1fb2e74..0000000
+--- a/node_modules/@giphy/js-analytics/dist/pingback.d.ts
++++ /dev/null
+@@ -1,3 +0,0 @@
+-import { Pingback } from './types';
+-declare const pingback: ({ userId, eventType, actionType, attributes, queueEvents, analyticsResponsePayload, }: Pingback) => void;
+-export default pingback;
+diff --git a/node_modules/@giphy/js-analytics/dist/pingback.js b/node_modules/@giphy/js-analytics/dist/pingback.js
+deleted file mode 100644
+index 6c515e1..0000000
+--- a/node_modules/@giphy/js-analytics/dist/pingback.js
++++ /dev/null
+@@ -1,55 +0,0 @@
+-"use strict";
+-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+-        if (ar || !(i in from)) {
+-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+-            ar[i] = from[i];
+-        }
+-    }
+-    return to.concat(ar || Array.prototype.slice.call(from));
+-};
+-var __importDefault = (this && this.__importDefault) || function (mod) {
+-    return (mod && mod.__esModule) ? mod : { "default": mod };
+-};
+-var _a;
+-Object.defineProperty(exports, "__esModule", { value: true });
+-var js_util_1 = require("@giphy/js-util");
+-var throttle_debounce_1 = require("throttle-debounce");
+-var global_1 = __importDefault(require("./global"));
+-var send_pingback_1 = require("./send-pingback");
+-var queuedPingbackEvents = [];
+-global_1.default.giphyRandomId = (0, js_util_1.getPingbackId)();
+-var loggedInUserId = '';
+-function sendPingbacks() {
+-    var sendEvents = __spreadArray([], queuedPingbackEvents, true);
+-    queuedPingbackEvents = [];
+-    (0, send_pingback_1.sendPingback)(sendEvents);
+-}
+-var debouncedPingbackEvent = (0, throttle_debounce_1.debounce)(1000, sendPingbacks);
+-(_a = global_1.default.addEventListener) === null || _a === void 0 ? void 0 : _a.call(global_1.default, 'beforeunload', sendPingbacks);
+-var pingback = function (_a) {
+-    var userId = _a.userId, eventType = _a.eventType, actionType = _a.actionType, attributes = _a.attributes, _b = _a.queueEvents, queueEvents = _b === void 0 ? true : _b, analyticsResponsePayload = _a.analyticsResponsePayload;
+-    // save the user id for whenever create session is invoked
+-    loggedInUserId = userId ? String(userId) : loggedInUserId;
+-    var newEvent = {
+-        ts: Date.now(),
+-        attributes: attributes,
+-        action_type: actionType,
+-        user_id: (0, js_util_1.getPingbackId)(),
+-        analytics_response_payload: analyticsResponsePayload,
+-    };
+-    if (loggedInUserId) {
+-        newEvent.logged_in_user_id = loggedInUserId;
+-    }
+-    // add verification mode
+-    if (newEvent.analytics_response_payload) {
+-        newEvent.analytics_response_payload = "".concat(newEvent.analytics_response_payload).concat(js_util_1.Logger.ENABLED ? '&mode=verification' : '');
+-    }
+-    if (eventType) {
+-        newEvent.event_type = eventType;
+-    }
+-    queuedPingbackEvents.push(newEvent);
+-    queueEvents ? debouncedPingbackEvent() : sendPingbacks();
+-};
+-exports.default = pingback;
+-//# sourceMappingURL=pingback.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/pingback.js.map b/node_modules/@giphy/js-analytics/dist/pingback.js.map
+deleted file mode 100644
+index 2902cc4..0000000
+--- a/node_modules/@giphy/js-analytics/dist/pingback.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"pingback.js","sourceRoot":"","sources":["../src/pingback.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;AAAA,0CAAsD;AACtD,uDAA4C;AAC5C,oDAAyB;AACzB,iDAA8C;AAG9C,IAAI,oBAAoB,GAAoB,EAAE,CAAA;AAE9C,gBAAE,CAAC,aAAa,GAAG,IAAA,uBAAa,GAAE,CAAA;AAElC,IAAI,cAAc,GAAG,EAAE,CAAA;AAEvB,SAAS,aAAa;IAClB,IAAM,UAAU,qBAAO,oBAAoB,OAAC,CAAA;IAC5C,oBAAoB,GAAG,EAAE,CAAA;IACzB,IAAA,4BAAY,EAAC,UAAU,CAAC,CAAA;AAC5B,CAAC;AAED,IAAM,sBAAsB,GAAG,IAAA,4BAAQ,EAAC,IAAI,EAAE,aAAa,CAAC,CAAA;AAE5D,MAAA,gBAAE,CAAC,gBAAgB,iEAAG,cAAc,EAAE,aAAa,CAAC,CAAA;AAEpD,IAAM,QAAQ,GAAG,UAAC,EAOP;QANP,MAAM,YAAA,EACN,SAAS,eAAA,EACT,UAAU,gBAAA,EACV,UAAU,gBAAA,EACV,mBAAkB,EAAlB,WAAW,mBAAG,IAAI,KAAA,EAClB,wBAAwB,8BAAA;IAExB,0DAA0D;IAC1D,cAAc,GAAG,MAAM,CAAC,CAAC,CAAC,MAAM,CAAC,MAAM,CAAC,CAAC,CAAC,CAAC,cAAc,CAAA;IAEzD,IAAM,QAAQ,GAAkB;QAC5B,EAAE,EAAE,IAAI,CAAC,GAAG,EAAE;QACd,UAAU,YAAA;QACV,WAAW,EAAE,UAAU;QACvB,OAAO,EAAE,IAAA,uBAAa,GAAE;QACxB,0BAA0B,EAAE,wBAAwB;KACvD,CAAA;IAED,IAAI,cAAc,EAAE;QAChB,QAAQ,CAAC,iBAAiB,GAAG,cAAc,CAAA;KAC9C;IAED,wBAAwB;IACxB,IAAI,QAAQ,CAAC,0BAA0B,EAAE;QACrC,QAAQ,CAAC,0BAA0B,GAAG,UAAG,QAAQ,CAAC,0BAA0B,SACxE,gBAAM,CAAC,OAAO,CAAC,CAAC,CAAC,oBAAoB,CAAC,CAAC,CAAC,EAAE,CAC5C,CAAA;KACL;IAED,IAAI,SAAS,EAAE;QACX,QAAQ,CAAC,UAAU,GAAG,SAAS,CAAA;KAClC;IAED,oBAAoB,CAAC,IAAI,CAAC,QAAQ,CAAC,CAAA;IAEnC,WAAW,CAAC,CAAC,CAAC,sBAAsB,EAAE,CAAC,CAAC,CAAC,aAAa,EAAE,CAAA;AAC5D,CAAC,CAAA;AAED,kBAAe,QAAQ,CAAA"}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/send-pingback.d.ts b/node_modules/@giphy/js-analytics/dist/send-pingback.d.ts
+deleted file mode 100644
+index e721d23..0000000
+--- a/node_modules/@giphy/js-analytics/dist/send-pingback.d.ts
++++ /dev/null
+@@ -1,2 +0,0 @@
+-import { PingbackEvent } from './types';
+-export declare const sendPingback: (events: PingbackEvent[]) => Promise<void | Response>;
+diff --git a/node_modules/@giphy/js-analytics/dist/send-pingback.js b/node_modules/@giphy/js-analytics/dist/send-pingback.js
+deleted file mode 100644
+index 989f0ff..0000000
+--- a/node_modules/@giphy/js-analytics/dist/send-pingback.js
++++ /dev/null
+@@ -1,30 +0,0 @@
+-"use strict";
+-var __importDefault = (this && this.__importDefault) || function (mod) {
+-    return (mod && mod.__esModule) ? mod : { "default": mod };
+-};
+-Object.defineProperty(exports, "__esModule", { value: true });
+-exports.sendPingback = void 0;
+-var js_util_1 = require("@giphy/js-util");
+-var global_1 = __importDefault(require("./global"));
+-// TODO remove api key
+-var environment = (global_1.default === null || global_1.default === void 0 ? void 0 : global_1.default.GIPHY_PINGBACK_URL) || 'https://pingback.giphy.com';
+-var pingBackUrl = "".concat(environment, "/v2/pingback?apikey=l0HlIwPWyBBUDAUgM");
+-var sendPingback = function (events) {
+-    var headers = (0, js_util_1.getGiphySDKRequestHeaders)();
+-    /* istanbul ignore next */
+-    headers === null || headers === void 0 ? void 0 : headers.set('Content-Type', 'application/json');
+-    js_util_1.Logger.debug("Pingback session", events);
+-    if (!events.length) {
+-        return new Promise(function (resolve) { return resolve(); });
+-    }
+-    return fetch(pingBackUrl, {
+-        method: 'POST',
+-        body: JSON.stringify({ events: events }),
+-        headers: headers,
+-    }).catch(function (error) {
+-        // Call failed, probably due to adblock.
+-        js_util_1.Logger.warn("pingbacks failing to post ".concat(error));
+-    });
+-};
+-exports.sendPingback = sendPingback;
+-//# sourceMappingURL=send-pingback.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/send-pingback.js.map b/node_modules/@giphy/js-analytics/dist/send-pingback.js.map
+deleted file mode 100644
+index 51cb987..0000000
+--- a/node_modules/@giphy/js-analytics/dist/send-pingback.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"send-pingback.js","sourceRoot":"","sources":["../src/send-pingback.ts"],"names":[],"mappings":";;;;;;AAAA,0CAAkE;AAClE,oDAAyB;AAGzB,sBAAsB;AACtB,IAAM,WAAW,GAAG,CAAA,gBAAE,aAAF,gBAAE,uBAAF,gBAAE,CAAE,kBAAkB,KAAI,4BAA4B,CAAA;AAC1E,IAAM,WAAW,GAAG,UAAG,WAAW,0CAAuC,CAAA;AAElE,IAAM,YAAY,GAAG,UAAC,MAAuB;IAChD,IAAM,OAAO,GAAG,IAAA,mCAAyB,GAAE,CAAA;IAC3C,0BAA0B;IAC1B,OAAO,aAAP,OAAO,uBAAP,OAAO,CAAE,GAAG,CAAC,cAAc,EAAE,kBAAkB,CAAC,CAAA;IAChD,gBAAM,CAAC,KAAK,CAAC,kBAAkB,EAAE,MAAM,CAAC,CAAA;IAExC,IAAI,CAAC,MAAM,CAAC,MAAM,EAAE;QAChB,OAAO,IAAI,OAAO,CAAO,UAAC,OAAO,IAAK,OAAA,OAAO,EAAE,EAAT,CAAS,CAAC,CAAA;KACnD;IAED,OAAO,KAAK,CAAC,WAAW,EAAE;QACtB,MAAM,EAAE,MAAM;QACd,IAAI,EAAE,IAAI,CAAC,SAAS,CAAC,EAAE,MAAM,QAAA,EAAE,CAAC;QAChC,OAAO,SAAA;KACV,CAAC,CAAC,KAAK,CAAC,UAAC,KAAK;QACX,wCAAwC;QACxC,gBAAM,CAAC,IAAI,CAAC,oCAA6B,KAAK,CAAE,CAAC,CAAA;IACrD,CAAC,CAAC,CAAA;AACN,CAAC,CAAA;AAlBY,QAAA,YAAY,gBAkBxB"}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/types.d.ts b/node_modules/@giphy/js-analytics/dist/types.d.ts
+deleted file mode 100644
+index 3bd4161..0000000
+--- a/node_modules/@giphy/js-analytics/dist/types.d.ts
++++ /dev/null
+@@ -1,23 +0,0 @@
+-import { PingbackEventType } from '@giphy/js-types';
+-export type PingbackAttributes = {
+-    [key: string]: string;
+-};
+-export type Pingback = {
+-    userId?: string | number;
+-    eventType?: PingbackEventType;
+-    actionType: PingbackActionType;
+-    attributes?: PingbackAttributes;
+-    queueEvents?: boolean;
+-    analyticsResponsePayload: string;
+-};
+-export type PingbackActionType = 'CLICK' | 'SEEN' | 'HOVER' | 'FAVORITE' | 'SENT' | 'START';
+-export type PingbackEvent = {
+-    event_type?: PingbackEventType;
+-    user_id?: string;
+-    logged_in_user_id?: string;
+-    action_type: string;
+-    random_id?: string;
+-    attributes: any;
+-    ts: number;
+-    analytics_response_payload?: string;
+-};
+diff --git a/node_modules/@giphy/js-analytics/dist/types.js b/node_modules/@giphy/js-analytics/dist/types.js
+deleted file mode 100644
+index 11e638d..0000000
+--- a/node_modules/@giphy/js-analytics/dist/types.js
++++ /dev/null
+@@ -1,3 +0,0 @@
+-"use strict";
+-Object.defineProperty(exports, "__esModule", { value: true });
+-//# sourceMappingURL=types.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/dist/types.js.map b/node_modules/@giphy/js-analytics/dist/types.js.map
+deleted file mode 100644
+index c768b79..0000000
+--- a/node_modules/@giphy/js-analytics/dist/types.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"types.js","sourceRoot":"","sources":["../src/types.ts"],"names":[],"mappings":""}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/global.d.ts b/node_modules/@giphy/js-analytics/esm/global.d.ts
+deleted file mode 100644
+index 5298df7..0000000
+--- a/node_modules/@giphy/js-analytics/esm/global.d.ts
++++ /dev/null
+@@ -1,2 +0,0 @@
+-declare const _default: any;
+-export default _default;
+diff --git a/node_modules/@giphy/js-analytics/esm/global.js b/node_modules/@giphy/js-analytics/esm/global.js
+deleted file mode 100644
+index 0375d95..0000000
+--- a/node_modules/@giphy/js-analytics/esm/global.js
++++ /dev/null
+@@ -1,3 +0,0 @@
+-/* istanbul ignore next */
+-export default ((typeof window !== 'undefined' ? window : global) || {});
+-//# sourceMappingURL=global.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/global.js.map b/node_modules/@giphy/js-analytics/esm/global.js.map
+deleted file mode 100644
+index f8f6aea..0000000
+--- a/node_modules/@giphy/js-analytics/esm/global.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"global.js","sourceRoot":"","sources":["../src/global.ts"],"names":[],"mappings":"AAAA,0BAA0B;AAC1B,eAAe,CAAC,CAAC,OAAO,MAAM,KAAK,WAAW,CAAC,CAAC,CAAC,MAAM,CAAC,CAAC,CAAC,MAAM,CAAC,IAAI,EAAE,CAAQ,CAAA"}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/index.d.ts b/node_modules/@giphy/js-analytics/esm/index.d.ts
+deleted file mode 100644
+index 56d7bf5..0000000
+--- a/node_modules/@giphy/js-analytics/esm/index.d.ts
++++ /dev/null
+@@ -1,3 +0,0 @@
+-export { default as mergeAttributes } from './merge-attributes';
+-export { default as pingback } from './pingback';
+-export * from './types';
+diff --git a/node_modules/@giphy/js-analytics/esm/index.js b/node_modules/@giphy/js-analytics/esm/index.js
+deleted file mode 100644
+index 13683c0..0000000
+--- a/node_modules/@giphy/js-analytics/esm/index.js
++++ /dev/null
+@@ -1,4 +0,0 @@
+-export { default as mergeAttributes } from './merge-attributes';
+-export { default as pingback } from './pingback';
+-export * from './types';
+-//# sourceMappingURL=index.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/index.js.map b/node_modules/@giphy/js-analytics/esm/index.js.map
+deleted file mode 100644
+index 173458d..0000000
+--- a/node_modules/@giphy/js-analytics/esm/index.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"index.js","sourceRoot":"","sources":["../src/index.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,IAAI,eAAe,EAAE,MAAM,oBAAoB,CAAA;AAC/D,OAAO,EAAE,OAAO,IAAI,QAAQ,EAAE,MAAM,YAAY,CAAA;AAChD,cAAc,SAAS,CAAA"}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/merge-attributes.d.ts b/node_modules/@giphy/js-analytics/esm/merge-attributes.d.ts
+deleted file mode 100644
+index f6ae910..0000000
+--- a/node_modules/@giphy/js-analytics/esm/merge-attributes.d.ts
++++ /dev/null
+@@ -1,5 +0,0 @@
+-import { PingbackAttributes } from './types';
+-declare const mergeAttribute: (attributes: PingbackAttributes, newAttributes: PingbackAttributes, key: string) => {
+-    [x: string]: string;
+-};
+-export default mergeAttribute;
+diff --git a/node_modules/@giphy/js-analytics/esm/merge-attributes.js b/node_modules/@giphy/js-analytics/esm/merge-attributes.js
+deleted file mode 100644
+index f8e1495..0000000
+--- a/node_modules/@giphy/js-analytics/esm/merge-attributes.js
++++ /dev/null
+@@ -1,23 +0,0 @@
+-var __assign = (this && this.__assign) || function () {
+-    __assign = Object.assign || function(t) {
+-        for (var s, i = 1, n = arguments.length; i < n; i++) {
+-            s = arguments[i];
+-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+-                t[p] = s[p];
+-        }
+-        return t;
+-    };
+-    return __assign.apply(this, arguments);
+-};
+-import { pick } from '@giphy/js-util';
+-var mergeAttribute = function (attributes, newAttributes, key) {
+-    var _a;
+-    var result1 = pick(attributes, [key]);
+-    var result2 = pick(newAttributes, [key]);
+-    if (result1[key] && result2[key]) {
+-        return __assign(__assign(__assign({}, attributes), newAttributes), (_a = {}, _a[key] = result1[key] + ', ' + result2[key], _a));
+-    }
+-    return __assign(__assign({}, attributes), newAttributes);
+-};
+-export default mergeAttribute;
+-//# sourceMappingURL=merge-attributes.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/merge-attributes.js.map b/node_modules/@giphy/js-analytics/esm/merge-attributes.js.map
+deleted file mode 100644
+index 47341a7..0000000
+--- a/node_modules/@giphy/js-analytics/esm/merge-attributes.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"merge-attributes.js","sourceRoot":"","sources":["../src/merge-attributes.ts"],"names":[],"mappings":";;;;;;;;;;;AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,gBAAgB,CAAA;AAGrC,IAAM,cAAc,GAAG,UAAC,UAA8B,EAAE,aAAiC,EAAE,GAAW;;IAClG,IAAM,OAAO,GAAG,IAAI,CAAC,UAAU,EAAE,CAAC,GAAG,CAAC,CAAC,CAAA;IACvC,IAAM,OAAO,GAAG,IAAI,CAAC,aAAa,EAAE,CAAC,GAAG,CAAC,CAAC,CAAA;IAC1C,IAAI,OAAO,CAAC,GAAG,CAAC,IAAI,OAAO,CAAC,GAAG,CAAC,EAAE;QAC9B,sCAAY,UAAU,GAAK,aAAa,aAAO,GAAC,GAAG,IAAG,OAAO,CAAC,GAAG,CAAC,GAAG,IAAI,GAAG,OAAO,CAAC,GAAG,CAAC,OAAI;KAC/F;IACD,6BAAY,UAAU,GAAK,aAAa,EAAE;AAC9C,CAAC,CAAA;AAED,eAAe,cAAc,CAAA"}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/pingback.d.ts b/node_modules/@giphy/js-analytics/esm/pingback.d.ts
+deleted file mode 100644
+index 1fb2e74..0000000
+--- a/node_modules/@giphy/js-analytics/esm/pingback.d.ts
++++ /dev/null
+@@ -1,3 +0,0 @@
+-import { Pingback } from './types';
+-declare const pingback: ({ userId, eventType, actionType, attributes, queueEvents, analyticsResponsePayload, }: Pingback) => void;
+-export default pingback;
+diff --git a/node_modules/@giphy/js-analytics/esm/pingback.js b/node_modules/@giphy/js-analytics/esm/pingback.js
+deleted file mode 100644
+index e11184c..0000000
+--- a/node_modules/@giphy/js-analytics/esm/pingback.js
++++ /dev/null
+@@ -1,50 +0,0 @@
+-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+-        if (ar || !(i in from)) {
+-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+-            ar[i] = from[i];
+-        }
+-    }
+-    return to.concat(ar || Array.prototype.slice.call(from));
+-};
+-var _a;
+-import { getPingbackId, Logger } from '@giphy/js-util';
+-import { debounce } from 'throttle-debounce';
+-import gl from './global';
+-import { sendPingback } from './send-pingback';
+-var queuedPingbackEvents = [];
+-gl.giphyRandomId = getPingbackId();
+-var loggedInUserId = '';
+-function sendPingbacks() {
+-    var sendEvents = __spreadArray([], queuedPingbackEvents, true);
+-    queuedPingbackEvents = [];
+-    sendPingback(sendEvents);
+-}
+-var debouncedPingbackEvent = debounce(1000, sendPingbacks);
+-(_a = gl.addEventListener) === null || _a === void 0 ? void 0 : _a.call(gl, 'beforeunload', sendPingbacks);
+-var pingback = function (_a) {
+-    var userId = _a.userId, eventType = _a.eventType, actionType = _a.actionType, attributes = _a.attributes, _b = _a.queueEvents, queueEvents = _b === void 0 ? true : _b, analyticsResponsePayload = _a.analyticsResponsePayload;
+-    // save the user id for whenever create session is invoked
+-    loggedInUserId = userId ? String(userId) : loggedInUserId;
+-    var newEvent = {
+-        ts: Date.now(),
+-        attributes: attributes,
+-        action_type: actionType,
+-        user_id: getPingbackId(),
+-        analytics_response_payload: analyticsResponsePayload,
+-    };
+-    if (loggedInUserId) {
+-        newEvent.logged_in_user_id = loggedInUserId;
+-    }
+-    // add verification mode
+-    if (newEvent.analytics_response_payload) {
+-        newEvent.analytics_response_payload = "".concat(newEvent.analytics_response_payload).concat(Logger.ENABLED ? '&mode=verification' : '');
+-    }
+-    if (eventType) {
+-        newEvent.event_type = eventType;
+-    }
+-    queuedPingbackEvents.push(newEvent);
+-    queueEvents ? debouncedPingbackEvent() : sendPingbacks();
+-};
+-export default pingback;
+-//# sourceMappingURL=pingback.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/pingback.js.map b/node_modules/@giphy/js-analytics/esm/pingback.js.map
+deleted file mode 100644
+index 08dd742..0000000
+--- a/node_modules/@giphy/js-analytics/esm/pingback.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"pingback.js","sourceRoot":"","sources":["../src/pingback.ts"],"names":[],"mappings":";;;;;;;;;;AAAA,OAAO,EAAE,aAAa,EAAE,MAAM,EAAE,MAAM,gBAAgB,CAAA;AACtD,OAAO,EAAE,QAAQ,EAAE,MAAM,mBAAmB,CAAA;AAC5C,OAAO,EAAE,MAAM,UAAU,CAAA;AACzB,OAAO,EAAE,YAAY,EAAE,MAAM,iBAAiB,CAAA;AAG9C,IAAI,oBAAoB,GAAoB,EAAE,CAAA;AAE9C,EAAE,CAAC,aAAa,GAAG,aAAa,EAAE,CAAA;AAElC,IAAI,cAAc,GAAG,EAAE,CAAA;AAEvB,SAAS,aAAa;IAClB,IAAM,UAAU,qBAAO,oBAAoB,OAAC,CAAA;IAC5C,oBAAoB,GAAG,EAAE,CAAA;IACzB,YAAY,CAAC,UAAU,CAAC,CAAA;AAC5B,CAAC;AAED,IAAM,sBAAsB,GAAG,QAAQ,CAAC,IAAI,EAAE,aAAa,CAAC,CAAA;AAE5D,MAAA,EAAE,CAAC,gBAAgB,mDAAG,cAAc,EAAE,aAAa,CAAC,CAAA;AAEpD,IAAM,QAAQ,GAAG,UAAC,EAOP;QANP,MAAM,YAAA,EACN,SAAS,eAAA,EACT,UAAU,gBAAA,EACV,UAAU,gBAAA,EACV,mBAAkB,EAAlB,WAAW,mBAAG,IAAI,KAAA,EAClB,wBAAwB,8BAAA;IAExB,0DAA0D;IAC1D,cAAc,GAAG,MAAM,CAAC,CAAC,CAAC,MAAM,CAAC,MAAM,CAAC,CAAC,CAAC,CAAC,cAAc,CAAA;IAEzD,IAAM,QAAQ,GAAkB;QAC5B,EAAE,EAAE,IAAI,CAAC,GAAG,EAAE;QACd,UAAU,YAAA;QACV,WAAW,EAAE,UAAU;QACvB,OAAO,EAAE,aAAa,EAAE;QACxB,0BAA0B,EAAE,wBAAwB;KACvD,CAAA;IAED,IAAI,cAAc,EAAE;QAChB,QAAQ,CAAC,iBAAiB,GAAG,cAAc,CAAA;KAC9C;IAED,wBAAwB;IACxB,IAAI,QAAQ,CAAC,0BAA0B,EAAE;QACrC,QAAQ,CAAC,0BAA0B,GAAG,UAAG,QAAQ,CAAC,0BAA0B,SACxE,MAAM,CAAC,OAAO,CAAC,CAAC,CAAC,oBAAoB,CAAC,CAAC,CAAC,EAAE,CAC5C,CAAA;KACL;IAED,IAAI,SAAS,EAAE;QACX,QAAQ,CAAC,UAAU,GAAG,SAAS,CAAA;KAClC;IAED,oBAAoB,CAAC,IAAI,CAAC,QAAQ,CAAC,CAAA;IAEnC,WAAW,CAAC,CAAC,CAAC,sBAAsB,EAAE,CAAC,CAAC,CAAC,aAAa,EAAE,CAAA;AAC5D,CAAC,CAAA;AAED,eAAe,QAAQ,CAAA"}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/send-pingback.d.ts b/node_modules/@giphy/js-analytics/esm/send-pingback.d.ts
+deleted file mode 100644
+index e721d23..0000000
+--- a/node_modules/@giphy/js-analytics/esm/send-pingback.d.ts
++++ /dev/null
+@@ -1,2 +0,0 @@
+-import { PingbackEvent } from './types';
+-export declare const sendPingback: (events: PingbackEvent[]) => Promise<void | Response>;
+diff --git a/node_modules/@giphy/js-analytics/esm/send-pingback.js b/node_modules/@giphy/js-analytics/esm/send-pingback.js
+deleted file mode 100644
+index 5885c95..0000000
+--- a/node_modules/@giphy/js-analytics/esm/send-pingback.js
++++ /dev/null
+@@ -1,23 +0,0 @@
+-import { getGiphySDKRequestHeaders, Logger } from '@giphy/js-util';
+-import gl from './global';
+-// TODO remove api key
+-var environment = (gl === null || gl === void 0 ? void 0 : gl.GIPHY_PINGBACK_URL) || 'https://pingback.giphy.com';
+-var pingBackUrl = "".concat(environment, "/v2/pingback?apikey=l0HlIwPWyBBUDAUgM");
+-export var sendPingback = function (events) {
+-    var headers = getGiphySDKRequestHeaders();
+-    /* istanbul ignore next */
+-    headers === null || headers === void 0 ? void 0 : headers.set('Content-Type', 'application/json');
+-    Logger.debug("Pingback session", events);
+-    if (!events.length) {
+-        return new Promise(function (resolve) { return resolve(); });
+-    }
+-    return fetch(pingBackUrl, {
+-        method: 'POST',
+-        body: JSON.stringify({ events: events }),
+-        headers: headers,
+-    }).catch(function (error) {
+-        // Call failed, probably due to adblock.
+-        Logger.warn("pingbacks failing to post ".concat(error));
+-    });
+-};
+-//# sourceMappingURL=send-pingback.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/send-pingback.js.map b/node_modules/@giphy/js-analytics/esm/send-pingback.js.map
+deleted file mode 100644
+index 5c97294..0000000
+--- a/node_modules/@giphy/js-analytics/esm/send-pingback.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"send-pingback.js","sourceRoot":"","sources":["../src/send-pingback.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,yBAAyB,EAAE,MAAM,EAAE,MAAM,gBAAgB,CAAA;AAClE,OAAO,EAAE,MAAM,UAAU,CAAA;AAGzB,sBAAsB;AACtB,IAAM,WAAW,GAAG,CAAA,EAAE,aAAF,EAAE,uBAAF,EAAE,CAAE,kBAAkB,KAAI,4BAA4B,CAAA;AAC1E,IAAM,WAAW,GAAG,UAAG,WAAW,0CAAuC,CAAA;AAEzE,MAAM,CAAC,IAAM,YAAY,GAAG,UAAC,MAAuB;IAChD,IAAM,OAAO,GAAG,yBAAyB,EAAE,CAAA;IAC3C,0BAA0B;IAC1B,OAAO,aAAP,OAAO,uBAAP,OAAO,CAAE,GAAG,CAAC,cAAc,EAAE,kBAAkB,CAAC,CAAA;IAChD,MAAM,CAAC,KAAK,CAAC,kBAAkB,EAAE,MAAM,CAAC,CAAA;IAExC,IAAI,CAAC,MAAM,CAAC,MAAM,EAAE;QAChB,OAAO,IAAI,OAAO,CAAO,UAAC,OAAO,IAAK,OAAA,OAAO,EAAE,EAAT,CAAS,CAAC,CAAA;KACnD;IAED,OAAO,KAAK,CAAC,WAAW,EAAE;QACtB,MAAM,EAAE,MAAM;QACd,IAAI,EAAE,IAAI,CAAC,SAAS,CAAC,EAAE,MAAM,QAAA,EAAE,CAAC;QAChC,OAAO,SAAA;KACV,CAAC,CAAC,KAAK,CAAC,UAAC,KAAK;QACX,wCAAwC;QACxC,MAAM,CAAC,IAAI,CAAC,oCAA6B,KAAK,CAAE,CAAC,CAAA;IACrD,CAAC,CAAC,CAAA;AACN,CAAC,CAAA"}
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/types.d.ts b/node_modules/@giphy/js-analytics/esm/types.d.ts
+deleted file mode 100644
+index 3bd4161..0000000
+--- a/node_modules/@giphy/js-analytics/esm/types.d.ts
++++ /dev/null
+@@ -1,23 +0,0 @@
+-import { PingbackEventType } from '@giphy/js-types';
+-export type PingbackAttributes = {
+-    [key: string]: string;
+-};
+-export type Pingback = {
+-    userId?: string | number;
+-    eventType?: PingbackEventType;
+-    actionType: PingbackActionType;
+-    attributes?: PingbackAttributes;
+-    queueEvents?: boolean;
+-    analyticsResponsePayload: string;
+-};
+-export type PingbackActionType = 'CLICK' | 'SEEN' | 'HOVER' | 'FAVORITE' | 'SENT' | 'START';
+-export type PingbackEvent = {
+-    event_type?: PingbackEventType;
+-    user_id?: string;
+-    logged_in_user_id?: string;
+-    action_type: string;
+-    random_id?: string;
+-    attributes: any;
+-    ts: number;
+-    analytics_response_payload?: string;
+-};
+diff --git a/node_modules/@giphy/js-analytics/esm/types.js b/node_modules/@giphy/js-analytics/esm/types.js
+deleted file mode 100644
+index 718fd38..0000000
+--- a/node_modules/@giphy/js-analytics/esm/types.js
++++ /dev/null
+@@ -1,2 +0,0 @@
+-export {};
+-//# sourceMappingURL=types.js.map
+\ No newline at end of file
+diff --git a/node_modules/@giphy/js-analytics/esm/types.js.map b/node_modules/@giphy/js-analytics/esm/types.js.map
+deleted file mode 100644
+index c768b79..0000000
+--- a/node_modules/@giphy/js-analytics/esm/types.js.map
++++ /dev/null
+@@ -1 +0,0 @@
+-{"version":3,"file":"types.js","sourceRoot":"","sources":["../src/types.ts"],"names":[],"mappings":""}
+\ No newline at end of file
