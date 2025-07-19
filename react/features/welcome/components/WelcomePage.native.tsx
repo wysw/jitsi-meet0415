@@ -99,11 +99,11 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
         } = this.props;
 
         navigation.setOptions({
-            headerTitle: t('会通')
+            headerTitle: '会通'
         });
 
         navigation.addListener('focus', () => {
-            this._updateRoomName();
+            // this._updateRoomName();
         });
 
         navigation.addListener('blur', () => {
@@ -199,7 +199,7 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
             });
         } else {
             // Restart room placeholder animation.
-            this._updateRoomName();
+            // this._updateRoomName();
         }
 
         Animated.timing(

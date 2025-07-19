@@ -67,5 +67,6 @@ export function areClosedCaptionsEnabled(state: IReduxState) {
 export function isCCTabEnabled(state: IReduxState) {
     const { showSubtitlesOnStage = false } = state['features/base/settings'];
 
-    return areClosedCaptionsEnabled(state) && !showSubtitlesOnStage;
+    // return areClosedCaptionsEnabled(state) && !showSubtitlesOnStage;
+    return false;
 }
