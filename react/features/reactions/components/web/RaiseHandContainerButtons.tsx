@@ -16,7 +16,11 @@ const RaiseHandContainerButton = (props: AbstractButtonProps) => {
     const showReactionsAsPartOfRaiseHand
         = _shouldDisplayReactionsButtons && !reactionsButtonEnabled && !isNarrowLayout && !isMobileBrowser();
 
-    return <RaiseHandButton { ...props } />;
+    return showReactionsAsPartOfRaiseHand
+        ? <ReactionsMenuButton
+            { ...props }
+            showRaiseHand = { true } />
+        : <RaiseHandButton { ...props } />;
 };
 
 export default RaiseHandContainerButton;

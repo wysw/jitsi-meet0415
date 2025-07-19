@@ -12,7 +12,6 @@ interface IProps {
      * The URL of the conference.
      */
     url: string;
-    label: string;
 }
 
 const useStyles = makeStyles()(theme => {
@@ -29,13 +28,13 @@ const useStyles = makeStyles()(theme => {
  *
  * @returns {React$Element<any>}
  */
-function CopyMeetingLinkSection({ url, label }: IProps) {
+function CopyMeetingLinkSection({ url }: IProps) {
     const { classes } = useStyles();
     const { t } = useTranslation();
 
     return (
         <>
-            <p className = { classes.label }>{label}</p>
+            <p className = { classes.label }>{t('addPeople.shareLink')}</p>
             <CopyButton
                 accessibilityText = { t('addPeople.accessibilityLabel.meetingLink', { url: getDecodedURI(url) }) }
                 className = 'invite-more-dialog-conference-url'

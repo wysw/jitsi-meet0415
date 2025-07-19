@@ -156,9 +156,7 @@ function AddPeopleDialog({
             titleKey = 'addPeople.inviteMorePrompt'>
             <div className = 'invite-more-dialog'>
                 { _inviteContactsVisible && <InviteContactsSection /> }
-                <CopyMeetingLinkSection url = { _inviteUrl } label='会议网页版'/>
-                <CopyMeetingLinkSection url = "https://会通.com" label='会通app下载'/> 
-                <CopyMeetingLinkSection url = { (_inviteUrl ? _inviteUrl.split('/').pop() : '') ?? 'www' }  label='会议号'/> 
+                {_urlSharingVisible ? <CopyMeetingLinkSection url = { _inviteUrl } /> : null}
                 {
                     _emailSharingVisible
                         ? <InviteByEmailSection

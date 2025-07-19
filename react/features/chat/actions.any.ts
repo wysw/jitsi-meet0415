@@ -1,4 +1,3 @@
-/* global APP, JitsiMeetJS, config, interfaceConfig */
 import { IStore } from '../app/types';
 import { getCurrentConference } from '../base/conference/functions';
 import { getLocalParticipant } from '../base/participants/functions';

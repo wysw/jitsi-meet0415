@@ -23,6 +23,11 @@ export type IContext = {
 export type IJoinOptions = {
 
     /**
+     * Overwrites the base url set in the config.
+     */
+    baseUrl?: string;
+
+    /**
      * Config overwrites to use.
      */
     configOverwrite?: IConfig;
@@ -31,6 +36,11 @@ export type IJoinOptions = {
      * The display name to use.
      */
     displayName?: string;
+
+    /**
+     * Whether to create a moderator token for joining.
+     */
+    moderator?: boolean;
 
     /**
      * When joining the first participant and jwt singing material is available and a provided token
@@ -58,4 +68,9 @@ export type IJoinOptions = {
      * based on the logic of the test.
      */
     skipWaitToJoin?: boolean;
+
+    /**
+     * Whether to create a visitor token for joining.
+     */
+    visitor?: boolean;
 };

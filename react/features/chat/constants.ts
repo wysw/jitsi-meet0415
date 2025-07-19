@@ -4,7 +4,7 @@
 export const CHAR_LIMIT = 500;
 
 /**
- * The size of the chat. Equal to $sidebarWidth SCSS variable.
+ * The initial size of the chat.
  */
 export const CHAT_SIZE = 315;
 
@@ -42,6 +42,7 @@ export const LOBBY_CHAT_MESSAGE = 'LOBBY_CHAT_MESSAGE';
 export enum ChatTabs {
     CHAT = 'chat-tab',
     CLOSED_CAPTIONS = 'cc-tab',
+    FILE_SHARING = 'file_sharing-tab',
     POLLS = 'polls-tab'
 }
 

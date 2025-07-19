@@ -19,8 +19,7 @@
         android:taskAffinity=""
         android:name=".MainActivity"
         android:resizeableActivity="true"
-        android:hardwareAccelerated="true"
-        android:supportsPictureInPicture="false"
+        android:supportsPictureInPicture="true"
         android:windowSoftInputMode="adjustResize">
       <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
       <intent-filter>

@@ -55,7 +55,7 @@ export function getAvailableSubtitlesLanguages(stateful: IStateful, selectedLang
 export function areClosedCaptionsEnabled(state: IReduxState) {
     const { transcription } = state['features/base/config'];
 
-    return !transcription?.disableClosedCaptions;
+    return !transcription?.disableClosedCaptions && Boolean(transcription?.enabled);
 }
 
 /**
@@ -67,6 +67,5 @@ export function areClosedCaptionsEnabled(state: IReduxState) {
 export function isCCTabEnabled(state: IReduxState) {
     const { showSubtitlesOnStage = false } = state['features/base/settings'];
 
-    // return areClosedCaptionsEnabled(state) && !showSubtitlesOnStage;
-    return false;
+    return areClosedCaptionsEnabled(state) && !showSubtitlesOnStage;
 }

@@ -5,6 +5,7 @@ import {
     REMOVE_CACHED_TRANSCRIPT_MESSAGE,
     REMOVE_TRANSCRIPT_MESSAGE,
     SET_REQUESTING_SUBTITLES,
+    SET_SUBTITLES_ERROR,
     STORE_SUBTITLE,
     TOGGLE_REQUESTING_SUBTITLES,
     UPDATE_TRANSCRIPT_MESSAGE
@@ -21,12 +22,14 @@ const defaultState = {
     _requestingSubtitles: false,
     _language: null,
     messages: [],
-    subtitlesHistory: []
+    subtitlesHistory: [],
+    _hasError: false
 };
 
 export interface ISubtitlesState {
     _cachedTranscriptMessages: Map<string, ITranscriptMessage>;
     _displaySubtitles: boolean;
+    _hasError: boolean;
     _language: string | null;
     _requestingSubtitles: boolean;
     _transcriptMessages: Map<string, ITranscriptMessage>;
@@ -52,12 +55,14 @@ ReducerRegistry.register<ISubtitlesState>('features/subtitles', (
             ...state,
             _displaySubtitles: action.displaySubtitles,
             _language: action.language,
-            _requestingSubtitles: action.enabled
+            _requestingSubtitles: action.enabled,
+            _hasError: false
         };
     case TOGGLE_REQUESTING_SUBTITLES:
         return {
             ...state,
-            _requestingSubtitles: !state._requestingSubtitles
+            _requestingSubtitles: !state._requestingSubtitles,
+            _hasError: false
         };
     case TRANSCRIBER_LEFT:
         return {
@@ -88,6 +93,11 @@ ReducerRegistry.register<ISubtitlesState>('features/subtitles', (
             ]
         };
     }
+    case SET_SUBTITLES_ERROR:
+        return {
+            ...state,
+            _hasError: action.hasError
+        };
     }
 
     return state;

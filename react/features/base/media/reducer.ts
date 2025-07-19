@@ -41,7 +41,7 @@ export const _AUDIO_INITIAL_MEDIA_STATE = {
     available: true,
     gumPending: IGUMPendingState.NONE,
     unmuteBlocked: false,
-    muted: true
+    muted: false
 };
 
 /**

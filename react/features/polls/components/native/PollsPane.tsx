@@ -1,5 +1,3 @@
-/* eslint-disable react-native/no-color-literals */
-
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
@@ -13,8 +11,10 @@ import { BUTTON_TYPES } from '../../../base/ui/constants.native';
 import { ChatTabs } from '../../../chat/constants';
 import { TabBarLabelCounter }
     from '../../../mobile/navigation/components/TabBarLabelCounter';
-import AbstractPollsPane from '../AbstractPollsPane';
-import type { AbstractProps } from '../AbstractPollsPane';
+import {
+    default as AbstractPollsPane,
+    type AbstractProps
+} from '../AbstractPollsPane';
 
 import PollCreate from './PollCreate';
 import PollsList from './PollsList';
@@ -56,14 +56,13 @@ const PollsPane = (props: AbstractProps) => {
                     ? <PollCreate setCreateMode = { setCreateMode } />
                     : <>
                         <PollsList setCreateMode = { setCreateMode } />
-                        <Button
+                        {!isCreatePollsDisabled && <Button
                             accessibilityLabel = 'polls.create.create'
-                            disabled = { isCreatePollsDisabled }
                             id = { t('polls.create.create') }
                             labelKey = 'polls.create.create'
                             onClick = { onCreate }
                             style = { createPollButtonStyles }
-                            type = { BUTTON_TYPES.PRIMARY } />
+                            type = { BUTTON_TYPES.PRIMARY } />}
                     </>
             }
         </JitsiScreen>

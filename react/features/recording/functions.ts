@@ -439,15 +439,20 @@ export function isLiveStreamingButtonVisible({
  * @returns {boolean}
  */
 export function shouldRequireRecordingConsent(recorderSession: any, state: IReduxState) {
-    const { requireRecordingConsent } = state['features/dynamic-branding'] || {};
-    const { requireConsent } = state['features/base/config'].recordings || {};
-    const { iAmRecorder } = state['features/base/config'];
+    const { requireRecordingConsent, skipRecordingConsentInMeeting }
+        = state['features/dynamic-branding'] || {};
+    const { conference } = state['features/base/conference'] || {};
+    const { requireConsent, skipConsentInMeeting } = state['features/base/config'].recordings || {};
+    const { iAmRecorder, testing: { showSpotConsentDialog = false } = {} } = state['features/base/config'];
+    const { consentRequested } = state['features/recording'];
 
     if (iAmRecorder) {
         return false;
     }
 
-    if (isSpotTV()) {
+    // For Spot TV instances, check the showSpotConsentDialog config parameter
+    // If showSpotConsentDialog is false (or undefined, defaulting to false), don't show consent dialog
+    if (isSpotTV(state) && !showSpotConsentDialog) {
         return false;
     }
 
@@ -455,10 +460,25 @@ export function shouldRequireRecordingConsent(recorderSession: any, state: IRedu
         return false;
     }
 
-    if (!recorderSession.getInitiator()
-        || recorderSession.getStatus() === JitsiRecordingConstants.status.OFF) {
+    if (consentRequested.has(recorderSession.getID())) {
         return false;
     }
 
-    return recorderSession.getInitiator() !== getLocalParticipant(state)?.id;
+    // If we join a meeting that has an ongoing recording `conference` will be undefined since
+    // we get the recording state through the initial presence which happens in between the
+    // WILL_JOIN and JOINED events.
+    if (conference && (skipConsentInMeeting || skipRecordingConsentInMeeting)) {
+        return false;
+    }
+
+    // lib-jitsi-meet may set a JitsiParticipant as the initiator of the recording session or the
+    // JID resource in case it cannot find it. We need to handle both cases.
+    const initiator = recorderSession.getInitiator();
+    const initiatorId = initiator?.getId?.() ?? initiator;
+
+    if (!initiatorId || recorderSession.getStatus() === JitsiRecordingConstants.status.OFF) {
+        return false;
+    }
+
+    return initiatorId !== getLocalParticipant(state)?.id;
 }

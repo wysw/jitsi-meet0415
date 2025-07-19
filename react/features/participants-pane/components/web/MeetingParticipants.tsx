@@ -1,12 +1,10 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { connect, useDispatch, useSelector } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState } from '../../../app/types';
-import { rejectParticipantAudio, rejectParticipantVideo } from '../../../av-moderation/actions';
 import participantsPaneTheme from '../../../base/components/themes/participantsPaneTheme.json';
-import { MEDIA_TYPE } from '../../../base/media/constants';
 import { getParticipantById, isScreenShareParticipant } from '../../../base/participants/functions';
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
 import Input from '../../../base/ui/components/web/Input';
@@ -14,7 +12,7 @@ import useContextMenu from '../../../base/ui/hooks/useContextMenu.web';
 import { normalizeAccents } from '../../../base/util/strings.web';
 import { getBreakoutRooms, getCurrentRoomId, isInBreakoutRoom } from '../../../breakout-rooms/functions';
 import { isButtonEnabled, showOverflowDrawer } from '../../../toolbox/functions.web';
-import { muteRemote } from '../../../video-menu/actions.web';
+import { iAmVisitor } from '../../../visitors/functions';
 import { getSortedParticipantIds, isCurrentRoomRenamable, shouldRenderInviteButton } from '../../functions';
 import { useParticipantDrawer } from '../../hooks';
 import RenameButton from '../breakout-rooms/components/web/RenameButton';
@@ -81,18 +79,9 @@ function MeetingParticipants({
     showInviteButton,
     sortedParticipantIds = []
 }: IProps) {
-    const dispatch = useDispatch();
     const { t } = useTranslation();
 
     const [ lowerMenu, , toggleMenu, menuEnter, menuLeave, raiseContext ] = useContextMenu<string>();
-    const muteAudio = useCallback(id => () => {
-        dispatch(muteRemote(id, MEDIA_TYPE.AUDIO));
-        dispatch(rejectParticipantAudio(id));
-    }, [ dispatch ]);
-    const stopVideo = useCallback(id => () => {
-        dispatch(muteRemote(id, MEDIA_TYPE.VIDEO));
-        dispatch(rejectParticipantVideo(id));
-    }, [ dispatch ]);
     const [ drawerParticipant, closeDrawer, openDrawerForParticipant ] = useParticipantDrawer();
 
     // FIXME:
@@ -139,21 +128,18 @@ function MeetingParticipants({
                 <MeetingParticipantItems
                     isInBreakoutRoom = { isBreakoutRoom }
                     lowerMenu = { lowerMenu }
-                    muteAudio = { muteAudio }
                     openDrawerForParticipant = { openDrawerForParticipant }
                     overflowDrawer = { overflowDrawer }
                     participantActionEllipsisLabel = { participantActionEllipsisLabel }
                     participantIds = { sortedParticipantIds }
                     raiseContextId = { raiseContext.entity }
                     searchString = { normalizeAccents(searchString) }
-                    stopVideo = { stopVideo }
                     toggleMenu = { toggleMenu }
                     youText = { youText } />
             </div>
             <MeetingParticipantContextMenu
                 closeDrawer = { closeDrawer }
                 drawerParticipant = { drawerParticipant }
-                muteAudio = { muteAudio }
                 offsetTarget = { raiseContext?.offsetTarget }
                 onEnter = { menuEnter }
                 onLeave = { menuLeave }
@@ -174,11 +160,17 @@ function MeetingParticipants({
  */
 function _mapStateToProps(state: IReduxState) {
     let sortedParticipantIds: any = getSortedParticipantIds(state);
+    const _iAmVisitor = iAmVisitor(state);
 
     // Filter out the virtual screenshare participants since we do not want them to be displayed as separate
     // participants in the participants pane.
+    // Filter local participant when in visitor mode
     sortedParticipantIds = sortedParticipantIds.filter((id: any) => {
         const participant = getParticipantById(state, id);
+
+        if (_iAmVisitor && participant?.local) {
+            return false;
+        }
 
         return !isScreenShareParticipant(participant);
     });

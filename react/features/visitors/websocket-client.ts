@@ -20,11 +20,11 @@ export interface VisitorResponse extends QueueServiceResponse {
  * Uses STOMP for authenticating (https://stomp.github.io/).
  */
 export class WebsocketClient {
-    private stompClient: Client | undefined;
+    protected stompClient: Client | undefined;
 
     private static instance: WebsocketClient;
 
-    private retriesCount = 0;
+    protected retriesCount = 0;
 
     private _connectCount = 0;
 

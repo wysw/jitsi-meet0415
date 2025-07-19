@@ -5,6 +5,7 @@ import { IStore } from '../app/types';
 import { IStateful } from '../base/app/types';
 import {
     CONFERENCE_JOINED,
+    CONFERENCE_WILL_LEAVE,
     ENDPOINT_MESSAGE_RECEIVED,
     UPDATE_CONFERENCE_METADATA
 } from '../base/conference/actionTypes';
@@ -35,7 +36,8 @@ import { INotificationProps } from '../notifications/types';
 import { open as openParticipantsPane } from '../participants-pane/actions';
 import { joinConference } from '../prejoin/actions';
 
-import { UPDATE_VISITORS_IN_QUEUE_COUNT } from './actionTypes';
+import { VisitorsListWebsocketClient } from './VisitorsListWebsocketClient';
+import { SUBSCRIBE_VISITORS_LIST, UPDATE_VISITORS_IN_QUEUE_COUNT } from './actionTypes';
 import {
     approveRequest,
     clearPromotionRequest,
@@ -45,10 +47,11 @@ import {
     setInVisitorsQueue,
     setVisitorDemoteActor,
     setVisitorsSupported,
-    updateVisitorsInQueueCount
+    updateVisitorsInQueueCount,
+    updateVisitorsList
 } from './actions';
 import { JoinMeetingDialog } from './components';
-import { getPromotionRequests, getVisitorsInQueueCount } from './functions';
+import { getPromotionRequests, getVisitorsInQueueCount, isVisitorsListEnabled } from './functions';
 import logger from './logger';
 import { WebsocketClient } from './websocket-client';
 
@@ -135,6 +138,17 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
 
         break;
     }
+    case CONFERENCE_WILL_LEAVE: {
+        WebsocketClient.getInstance().disconnect();
+        VisitorsListWebsocketClient.getInstance().disconnect();
+        break;
+    }
+    case SUBSCRIBE_VISITORS_LIST: {
+        if (isVisitorsListEnabled(getState()) && !VisitorsListWebsocketClient.getInstance().isActive()) {
+            _subscribeVisitorsList(getState, dispatch);
+        }
+        break;
+    }
     case ENDPOINT_MESSAGE_RECEIVED: {
         const { data } = action;
 
@@ -154,15 +168,19 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         }
 
         const { hosts, visitors: visitorsConfig } = getState()['features/base/config'];
-        const { locationURL, preferVisitor } = getState()['features/base/connection'];
+        const { locationURL } = getState()['features/base/connection'];
 
-        if (!visitorsConfig?.queueService || !locationURL || !preferVisitor) {
+        if (!visitorsConfig?.queueService || !locationURL) {
             break;
         }
 
         // let's subscribe for visitor waiting queue
         const { room } = getState()['features/base/conference'];
+        const { disableBeforeUnloadHandlers = false } = getState()['features/base/config'];
         const conferenceJid = `${room}@${hosts?.muc}`;
+        const beforeUnloadHandler = () => {
+            WebsocketClient.getInstance().disconnect();
+        };
 
         WebsocketClient.getInstance()
             .connect(`wss://${visitorsConfig?.queueService}/visitor/websocket`,
@@ -171,8 +189,12 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                     if ('status' in msg && msg.status === 'live') {
                         logger.info('The conference is now live!');
 
+
                         WebsocketClient.getInstance().disconnect()
                             .then(() => {
+                                window.removeEventListener(
+                                    disableBeforeUnloadHandlers ? 'unload' : 'beforeunload',
+                                    beforeUnloadHandler);
                                 let delay = 0;
 
                                 // now let's connect to meeting
@@ -198,6 +220,12 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                 () => {
                     dispatch(setInVisitorsQueue(true));
                 });
+
+        /**
+         * Disconnecting the WebSocket client when the user closes the page.
+         */
+        window.addEventListener(disableBeforeUnloadHandlers ? 'unload' : 'beforeunload', beforeUnloadHandler);
+
 
         break;
     }
@@ -312,6 +340,71 @@ function _subscribeQueueStats(stateful: IStateful, dispatch: IStore['dispatch'])
                 }
             },
             toState(stateful)['features/base/jwt'].jwt);
+}
+
+/**
+ * Subscribes to the visitors list via WebSocket for real-time updates. This function establishes a WebSocket
+ * connection to track visitors in a conference.
+ *
+ * @param {IStore.getState} getState - Function to retrieve the current Redux state.
+ * @param {IStore.dispatch} dispatch - Function to dispatch Redux actions.
+ * @returns {void}
+ */
+function _subscribeVisitorsList(getState: IStore['getState'], dispatch: IStore['dispatch']) {
+    const state = getState();
+    const { visitors: visitorsConfig } = state['features/base/config'];
+    const conference = state['features/base/conference'].conference;
+    const meetingId = conference?.getMeetingUniqueId();
+    const localParticipant = getLocalParticipant(state);
+    const participantId = localParticipant?.id;
+
+    if (!visitorsConfig?.queueService || !meetingId || !participantId) {
+        logger.warn(`Missing required data for visitors list subscription', ${JSON.stringify({
+            queueService: visitorsConfig?.queueService,
+            meetingId,
+            participantId: participantId ? 'participantId present' : 'participantId missing'
+        })}`);
+
+        return;
+    }
+
+    const queueEndpoint = `/secured/conference/visitors-list/queue/${meetingId}/${participantId}`;
+    const topicEndpoint = `/secured/conference/visitors-list/topic/${meetingId}`;
+
+    logger.debug('Starting visitors list subscription');
+
+    VisitorsListWebsocketClient.getInstance()
+        .connectVisitorsList(
+            `wss://${visitorsConfig.queueService}/visitors-list/websocket`,
+            queueEndpoint,
+            topicEndpoint,
+            // Initial list callback - replace entire list
+            initialVisitors => {
+                const visitors = initialVisitors.map(v => ({ id: v.r, name: v.n }));
+
+                dispatch(updateVisitorsList(visitors));
+            },
+            // Delta updates callback - apply incremental changes
+            updates => {
+                let visitors = [ ...(getState()['features/visitors'].visitors ?? []) ];
+
+                updates.forEach(u => {
+                    if (u.s === 'j') {
+                        const index = visitors.findIndex(v => v.id === u.r);
+
+                        if (index === -1) {
+                            visitors.push({ id: u.r, name: u.n });
+                        } else {
+                            visitors[index] = { id: u.r, name: u.n };
+                        }
+                    } else if (u.s === 'l') {
+                        visitors = visitors.filter(v => v.id !== u.r);
+                    }
+                });
+
+                dispatch(updateVisitorsList(visitors));
+            },
+            getState()['features/base/jwt'].jwt);
 }
 
 /**

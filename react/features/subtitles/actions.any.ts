@@ -4,6 +4,7 @@ import {
     REMOVE_CACHED_TRANSCRIPT_MESSAGE,
     REMOVE_TRANSCRIPT_MESSAGE,
     SET_REQUESTING_SUBTITLES,
+    SET_SUBTITLES_ERROR,
     STORE_SUBTITLE,
     TOGGLE_REQUESTING_SUBTITLES,
     UPDATE_TRANSCRIPT_MESSAGE
@@ -82,8 +83,10 @@ export function toggleRequestingSubtitles() {
  * @param {boolean} enabled - The new state of the subtitles.
  * @param {boolean} displaySubtitles - Whether to display subtitles or not.
  * @param {string} language - The language of the subtitles.
+ * @param {boolean} backendRecordingOn - Whether backend recording is on.
  * @returns {{
  *    type: SET_REQUESTING_SUBTITLES,
+ *    backendRecordingOn: boolean,
  *    enabled: boolean,
  *    displaySubtitles: boolean,
  *    language: string
@@ -92,9 +95,11 @@ export function toggleRequestingSubtitles() {
 export function setRequestingSubtitles(
         enabled: boolean,
         displaySubtitles = true,
-        language: string | null = `translation-languages:${DEFAULT_LANGUAGE}`) {
+        language: string | null = `translation-languages:${DEFAULT_LANGUAGE}`,
+        backendRecordingOn = false) {
     return {
         type: SET_REQUESTING_SUBTITLES,
+        backendRecordingOn,
         displaySubtitles,
         enabled,
         language
@@ -114,5 +119,21 @@ export function storeSubtitle(subtitle: ISubtitle) {
     return {
         type: STORE_SUBTITLE,
         subtitle
+    };
+}
+
+/**
+ * Signals that an error occurred while starting subtitles.
+ *
+ * @param {boolean} hasError - Whether an error occurred or not.
+ * @returns {{
+ *    type: SET_SUBTITLES_ERROR,
+ *    hasError: boolean
+ * }}
+ */
+export function setSubtitlesError(hasError: boolean) {
+    return {
+        type: SET_SUBTITLES_ERROR,
+        hasError
     };
 }

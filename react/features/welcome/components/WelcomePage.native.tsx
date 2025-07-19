@@ -258,8 +258,8 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
 
         if (this.state._fieldFocused) {
             return (
-                <Animated.View style = { this._getHintBoxStyle() as ViewStyle }>
-                    <View style = { styles.hintTextContainer } >
+                <Animated.View style = { this._getHintBoxStyle() as ViewStyle[] }>
+                    <View style = { styles.hintTextContainer as ViewStyle } >
                         <Text style = { styles.hintText as TextStyle }>
                             { t('welcomepage.roomnameHint') }
                         </Text>
@@ -347,7 +347,7 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
                             onChange = { this._onRoomChange }
                             onFocus = { this._onFieldFocus }
                             onSubmitEditing = { this._onJoin }
-                            placeholder = { '请输入会议号' }
+                            placeholder = { this.state.roomPlaceholder }
                             returnKeyType = { 'go' }
                             value = { this.state.room } />
                         {

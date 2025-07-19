@@ -8,10 +8,13 @@ import { setChatPermissions } from '../../../chat/actions.any';
 
 import {
     requestDisableAudioModeration,
+    requestDisableDesktopModeration,
     requestDisableVideoModeration,
     requestEnableAudioModeration,
+    requestEnableDesktopModeration,
     requestEnableVideoModeration
 } from '../../../av-moderation/actions';
+import { MEDIA_TYPE } from '../../../av-moderation/constants';
 import {
     isEnabled as isAvModerationEnabled,
     isSupported as isAvModerationSupported
@@ -19,15 +22,16 @@ import {
 import { openDialog } from '../../../base/dialog/actions';
 import {
     IconCheck,
+    IconCloseLarge,
     IconDotsHorizontal,
+    IconScreenshare,
     IconVideoOff
 } from '../../../base/icons/svg';
-import { MEDIA_TYPE } from '../../../base/media/constants';
 import {
   getParticipantCount,
   getRaiseHandsQueue,
-    isEveryoneModerator
 } from '../../../base/participants/functions';
+
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
 import ContextMenu from '../../../base/ui/components/web/ContextMenu';
 import ContextMenuItemGroup from '../../../base/ui/components/web/ContextMenuItemGroup';
@@ -36,6 +40,7 @@ import { openSettingsDialog } from '../../../settings/actions.web';
 import { SETTINGS_TABS } from '../../../settings/constants';
 import { shouldShowModeratorSettings } from '../../../settings/functions.web';
 import LowerHandButton from '../../../video-menu/components/web/LowerHandButton';
+import MuteEveryonesDesktopDialog from '../../../video-menu/components/web/MuteEveryonesDesktopDialog';
 import MuteEveryonesVideoDialog from '../../../video-menu/components/web/MuteEveryonesVideoDialog';
 import {
   PERMISSIONS_MEETING_CHAT,
@@ -93,24 +98,21 @@ interface IProps {
     onMouseLeave?: (e?: React.MouseEvent) => void;
 }
 
-export const FooterContextMenu = ({
-  isOpen,
-  onDrawerClose,
-  onMouseLeave,
-}: IProps) => {
+export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: IProps) => {
     const dispatch = useDispatch();
     const isModerationSupported = useSelector((state: IReduxState) => isAvModerationSupported()(state));
   // 当前是主持人
-  const chatPermissions = useSelector(getChatPermissions);
+    const chatPermissions = useSelector(getChatPermissions);
     const raisedHandsQueue = useSelector(getRaiseHandsQueue);
     const isModeratorSettingsTabEnabled = useSelector(shouldShowModeratorSettings);
     const isAudioModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
+    const isDesktopModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.DESKTOP));
     const isVideoModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.VIDEO));
     const isBreakoutRoom = useSelector(isInBreakoutRoom);
-  const participantCount = useSelector(getParticipantCount);  
-  const isModerator = useSelector(isLocalParticipantModerator);
+    const participantCount = useSelector(getParticipantCount);  
+    const isModerator = useSelector(isLocalParticipantModerator);
   
-  const handleChatPermissionChange = useCallback(
+    const handleChatPermissionChange = useCallback(
     (permission: string) => {
       dispatch(
         setChatPermissions({
@@ -144,155 +146,157 @@ export const FooterContextMenu = ({
     const { t } = useTranslation();
 
     const disableAudioModeration = useCallback(() => dispatch(requestDisableAudioModeration()), [ dispatch ]);
-
+    const disableDesktopModeration = useCallback(() => dispatch(requestDisableDesktopModeration()), [ dispatch ]);
     const disableVideoModeration = useCallback(() => dispatch(requestDisableVideoModeration()), [ dispatch ]);
-
     const enableAudioModeration = useCallback(() => dispatch(requestEnableAudioModeration()), [ dispatch ]);
-
+    const enableDesktopModeration = useCallback(() => dispatch(requestEnableDesktopModeration()), [ dispatch ]);
     const enableVideoModeration = useCallback(() => dispatch(requestEnableVideoModeration()), [ dispatch ]);
 
     const { classes } = useStyles();
 
     const muteAllVideo = useCallback(
-    () => dispatch(openDialog(MuteEveryonesVideoDialog)),
-    [dispatch]
-  );
+        () => dispatch(openDialog(MuteEveryonesVideoDialog)), [ dispatch ]);
 
-  const openModeratorSettings = () =>
-    dispatch(openSettingsDialog(SETTINGS_TABS.MODERATOR));
-  const perChatActions = [
-      {
-      accessibilityLabel: t('participantsPane.actions.allowScreenShare'),
-      className: classes.indentedLabel,
-      id: 'participantsPane.actions.allowScreenShare',
-      icon:
-      chatPermissions.meetingScreenShare === PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW &&
-        IconCheck,
-      onClick: () =>
-        handleMeetingScreenSharePermissionChange(
-          chatPermissions.meetingScreenShare ===
-          PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW
-          ? PERMISSIONS_MEETING_SCREEN_SHARE.PROHIBITED
-          : PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW
-      ),
-      text: t('participantsPane.actions.allowScreenShare'),
-    },
-    {
-      accessibilityLabel: t(
-        'participantsPane.actions.allowPrivateChatWithModerator'
-      ),
-      className: classes.indentedLabel,
-      id: 'participantsPane.actions.allowPrivateChatWithModerator',
-      icon:
-        chatPermissions.lobbyChat === PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST &&
-        IconCheck,
-      onClick: () =>
-        handleLobbyChatPermissionChange(
-          chatPermissions.lobbyChat === PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST
-            ? PERMISSIONS_LOBBY_CHAT.MUTED
-            : PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST
+    const muteAllDesktop = useCallback(
+        () => dispatch(openDialog(MuteEveryonesDesktopDialog)), [ dispatch ]);
+
+    const openModeratorSettings = () => dispatch(openSettingsDialog(SETTINGS_TABS.MODERATOR));
+    const actions = [
+        {
+        accessibilityLabel: t('participantsPane.actions.allowScreenShare'),
+        className: classes.indentedLabel,
+        id: 'participantsPane.actions.allowScreenShare',
+        icon:
+        chatPermissions.meetingScreenShare === PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW &&
+            IconCheck,
+        onClick: () =>
+            handleMeetingScreenSharePermissionChange(
+            chatPermissions.meetingScreenShare ===
+            PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW
+            ? PERMISSIONS_MEETING_SCREEN_SHARE.PROHIBITED
+            : PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW
         ),
-      text: t('participantsPane.actions.allowPrivateChatWithModerator'),
-    },
-    {
-      accessibilityLabel: t('participantsPane.actions.allowFreeSpeech'),
-      className: classes.indentedLabel,
-      id: 'participantsPane.actions.allowFreeSpeech',
-      icon:
-        chatPermissions.meetingChat === PERMISSIONS_MEETING_CHAT.FREE &&
-        IconCheck,
-      onClick: () => handleChatPermissionChange(PERMISSIONS_MEETING_CHAT.FREE),
-      text: t('participantsPane.actions.allowFreeSpeech'),
-    },
-    {
-      accessibilityLabel: t('participantsPane.actions.onlyPublicComments'),
-      className: classes.indentedLabel,
-      id: 'participantsPane.actions.onlyPublicComments',
-      onClick: () =>
-        handleChatPermissionChange(PERMISSIONS_MEETING_CHAT.PUBLIC_ONLY),
-      icon:
-        chatPermissions.meetingChat === PERMISSIONS_MEETING_CHAT.PUBLIC_ONLY &&
-        IconCheck,
-      text: t('participantsPane.actions.onlyPublicComments'),
-    },
-    {
-      accessibilityLabel: t('participantsPane.actions.chatWithHostOnly'),
-      className: classes.indentedLabel,
-      id: 'participantsPane.actions.chatWithHostOnly',
-      onClick: () =>
-        handleChatPermissionChange(PERMISSIONS_MEETING_CHAT.PRIVATETO_HOST),
-      icon:
-        chatPermissions.meetingChat ===
-          PERMISSIONS_MEETING_CHAT.PRIVATETO_HOST && IconCheck,
-      text: t('participantsPane.actions.chatWithHostOnly'),
-    },
-    {
-      accessibilityLabel: t('participantsPane.actions.allMembersMuted'),
-      className: classes.indentedLabel,
-      id: 'participantsPane.actions.allMembersMuted',
-      icon:
-        chatPermissions.meetingChat === PERMISSIONS_MEETING_CHAT.MUTED &&
-        IconCheck,
-      onClick: () => handleChatPermissionChange('muted'),
-      text: t('participantsPane.actions.allMembersMuted'),
-    },
-  ];
-  const actions: any = [...perChatActions];
-  if (isModerationSupported) {
-    actions.unshift(
-      ...[
-        {
-            accessibilityLabel: t('participantsPane.actions.audioModeration'),
-            className: isAudioModerationEnabled ? classes.indentedLabel : '',
-            id: isAudioModerationEnabled
-                ? 'participants-pane-context-menu-stop-audio-moderation'
-                : 'participants-pane-context-menu-start-audio-moderation',
-            icon: !isAudioModerationEnabled && IconCheck,
-          onClick: isAudioModerationEnabled
-            ? disableAudioModeration
-            : enableAudioModeration,
-          text: t('participantsPane.actions.audioModeration'),
+        text: t('participantsPane.actions.allowScreenShare'),
         },
         {
-            accessibilityLabel: t('participantsPane.actions.videoModeration'),
-            className: isVideoModerationEnabled ? classes.indentedLabel : '',
-            id: isVideoModerationEnabled
-                ? 'participants-pane-context-menu-stop-video-moderation'
-                : 'participants-pane-context-menu-start-video-moderation',
-            icon: !isVideoModerationEnabled && IconCheck,
-          onClick: isVideoModerationEnabled
-            ? disableVideoModeration
-            : enableVideoModeration,
-          text: t('participantsPane.actions.videoModeration'),
+        accessibilityLabel: t(
+            'participantsPane.actions.allowPrivateChatWithModerator'
+        ),
+        className: classes.indentedLabel,
+        id: 'participantsPane.actions.allowPrivateChatWithModerator',
+        icon:
+            chatPermissions.lobbyChat === PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST &&
+            IconCheck,
+        onClick: () =>
+            handleLobbyChatPermissionChange(
+            chatPermissions.lobbyChat === PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST
+                ? PERMISSIONS_LOBBY_CHAT.MUTED
+                : PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST
+            ),
+        text: t('participantsPane.actions.allowPrivateChatWithModerator'),
         },
-      ]
-    );
-  }
-
+        {
+        accessibilityLabel: t('participantsPane.actions.allowFreeSpeech'),
+        className: classes.indentedLabel,
+        id: 'participantsPane.actions.allowFreeSpeech',
+        icon:
+            chatPermissions.meetingChat === PERMISSIONS_MEETING_CHAT.FREE &&
+            IconCheck,
+        onClick: () => handleChatPermissionChange(PERMISSIONS_MEETING_CHAT.FREE),
+        text: t('participantsPane.actions.allowFreeSpeech'),
+        },
+        {
+        accessibilityLabel: t('participantsPane.actions.onlyPublicComments'),
+        className: classes.indentedLabel,
+        id: 'participantsPane.actions.onlyPublicComments',
+        onClick: () =>
+            handleChatPermissionChange(PERMISSIONS_MEETING_CHAT.PUBLIC_ONLY),
+        icon:
+            chatPermissions.meetingChat === PERMISSIONS_MEETING_CHAT.PUBLIC_ONLY &&
+            IconCheck,
+        text: t('participantsPane.actions.onlyPublicComments'),
+        },
+        {
+        accessibilityLabel: t('participantsPane.actions.chatWithHostOnly'),
+        className: classes.indentedLabel,
+        id: 'participantsPane.actions.chatWithHostOnly',
+        onClick: () =>
+            handleChatPermissionChange(PERMISSIONS_MEETING_CHAT.PRIVATETO_HOST),
+        icon:
+            chatPermissions.meetingChat ===
+            PERMISSIONS_MEETING_CHAT.PRIVATETO_HOST && IconCheck,
+        text: t('participantsPane.actions.chatWithHostOnly'),
+        },
+        {
+        accessibilityLabel: t('participantsPane.actions.allMembersMuted'),
+        className: classes.indentedLabel,
+        id: 'participantsPane.actions.allMembersMuted',
+        icon:
+            chatPermissions.meetingChat === PERMISSIONS_MEETING_CHAT.MUTED &&
+            IconCheck,
+        onClick: () => handleChatPermissionChange('muted'),
+        text: t('participantsPane.actions.allMembersMuted'),
+        },
+    ];
+    if (isModerationSupported) {
+        actions.unshift(...[
+            {
+                accessibilityLabel: t('participantsPane.actions.audioModeration'),
+                className: isAudioModerationEnabled ? classes.indentedLabel : '',
+                id: isAudioModerationEnabled
+                    ? 'participants-pane-context-menu-stop-audio-moderation'
+                    : 'participants-pane-context-menu-start-audio-moderation',
+                icon: isAudioModerationEnabled ? IconCloseLarge : IconCheck,
+                onClick: isAudioModerationEnabled ? disableAudioModeration : enableAudioModeration,
+                text: t('participantsPane.actions.audioModeration')
+            }, {
+                accessibilityLabel: t('participantsPane.actions.videoModeration'),
+                className: isVideoModerationEnabled ? classes.indentedLabel : '',
+                id: isVideoModerationEnabled
+                    ? 'participants-pane-context-menu-stop-video-moderation'
+                    : 'participants-pane-context-menu-start-video-moderation',
+                icon: isVideoModerationEnabled ? IconCloseLarge : IconCheck,
+                onClick: isVideoModerationEnabled ? disableVideoModeration : enableVideoModeration,
+                text: t('participantsPane.actions.videoModeration')
+            }, {
+                accessibilityLabel: t('participantsPane.actions.desktopModeration'),
+                className: isDesktopModerationEnabled ? classes.indentedLabel : '',
+                id: isDesktopModerationEnabled
+                    ? 'participants-pane-context-menu-stop-desktop-moderation'
+                    : 'participants-pane-context-menu-start-desktop-moderation',
+                icon: isDesktopModerationEnabled ? IconCloseLarge : IconCheck,
+                onClick: isDesktopModerationEnabled ? disableDesktopModeration : enableDesktopModeration,
+                text: t('participantsPane.actions.desktopModeration')
+            }
+        ]
+    )}; 
     return (
         <ContextMenu
-      activateFocusTrap={true}
-      className={classes.contextMenu}
-      hidden={!isOpen}
-      isDrawerOpen={isOpen}
-      onDrawerClose={onDrawerClose}
-      onMouseLeave={onMouseLeave}
-    >
+            activateFocusTrap = { true }
+            className = { classes.contextMenu }
+            hidden = { !isOpen }
+            isDrawerOpen = { isOpen }
+            onDrawerClose = { onDrawerClose }
+            onMouseLeave = { onMouseLeave }>
             <ContextMenuItemGroup
-        actions={[
-          {
-            accessibilityLabel: t(
-              'participantsPane.actions.stopEveryonesVideo'
-            ),
-                    id: 'participants-pane-context-menu-stop-video',
-                    icon: IconVideoOff,
-                    onClick: muteAllVideo,
-            text: t('participantsPane.actions.stopEveryonesVideo'),
-          },
-        ]}
-      />
+                actions = { [
+                    {
+                        accessibilityLabel: t('participantsPane.actions.stopEveryonesVideo'),
+                        id: 'participants-pane-context-menu-stop-video',
+                        icon: IconVideoOff,
+                        onClick: muteAllVideo,
+                        text: t('participantsPane.actions.stopEveryonesVideo')
+                    },
+                    {
+                        accessibilityLabel: t('participantsPane.actions.stopEveryonesDesktop'),
+                        id: 'participants-pane-context-menu-stop-desktop',
+                        icon: IconScreenshare,
+                        onClick: muteAllDesktop,
+                        text: t('participantsPane.actions.stopEveryonesDesktop')
+                    }
+                ] } />
             {raisedHandsQueue.length !== 0 && <LowerHandButton />}
-            {!isBreakoutRoom && (isModerator || participantCount === 1)  && (
+            {!isBreakoutRoom && (isModerator || participantCount === 1) && (
                 <ContextMenuItemGroup actions = { actions }>
                     <div className = { classes.text }>
                         <span>{t('participantsPane.actions.allow')}</span>
@@ -301,13 +305,13 @@ export const FooterContextMenu = ({
             )}
             {isModeratorSettingsTabEnabled && (
                 <ContextMenuItemGroup
-          actions={[ {
+                    actions = { [ {
                         accessibilityLabel: t('participantsPane.actions.moreModerationControls'),
                         id: 'participants-pane-open-moderation-control-settings',
                         icon: IconDotsHorizontal,
                         onClick: openModeratorSettings,
                         text: t('participantsPane.actions.moreModerationControls')
-            } ]} />
+                    } ] } />
             )}
         </ContextMenu>
     );

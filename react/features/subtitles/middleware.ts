@@ -6,6 +6,7 @@ import { MEET_FEATURES } from '../base/jwt/constants';
 import { isJwtFeatureEnabled } from '../base/jwt/functions';
 import JitsiMeetJS from '../base/lib-jitsi-meet';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { showErrorNotification } from '../notifications/actions';
 import { TRANSCRIBER_JOINED } from '../transcribing/actionTypes';
 
 import {
@@ -16,6 +17,7 @@ import {
     removeCachedTranscriptMessage,
     removeTranscriptMessage,
     setRequestingSubtitles,
+    setSubtitlesError,
     storeSubtitle,
     updateTranscriptMessage
 } from './actions.any';
@@ -93,7 +95,7 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
     case SET_REQUESTING_SUBTITLES:
-        _requestingSubtitlesChange(store, action.enabled, action.language);
+        _requestingSubtitlesChange(store, action.enabled, action.language, action.backendRecordingOn);
         break;
     }
 
@@ -328,15 +330,18 @@ function _getPrimaryLanguageCode(language: string) {
  * @param {Store} store - The redux store.
  * @param {boolean} enabled - Whether subtitles should be enabled or not.
  * @param {string} language - The language to use for translation.
+ * @param {boolean} backendRecordingOn - Whether backend recording is on or not.
  * @private
  * @returns {void}
  */
 function _requestingSubtitlesChange(
         { dispatch, getState }: IStore,
         enabled: boolean,
-        language?: string | null) {
+        language?: string | null,
+        backendRecordingOn = false) {
     const state = getState();
     const { conference } = state['features/base/conference'];
+    const { transcription } = state['features/base/config'];
 
     conference?.setLocalParticipantProperty(
         P_NAME_REQUESTING_TRANSCRIPTION,
@@ -345,13 +350,22 @@ function _requestingSubtitlesChange(
     if (enabled && conference?.getTranscriptionStatus() === JitsiMeetJS.constants.transcriptionStatus.OFF) {
         const featureAllowed = isJwtFeatureEnabled(getState(), MEET_FEATURES.TRANSCRIPTION, false);
 
-        if (featureAllowed) {
+        // the default value for inviteJigasiOnBackendTranscribing is true (when undefined)
+        const inviteJigasi = conference?.getMetadataHandler()?.getMetadata()?.asyncTranscription
+            ? (transcription?.inviteJigasiOnBackendTranscribing ?? true) : true;
+
+        if (featureAllowed && (!backendRecordingOn || inviteJigasi)) {
             conference?.dial(TRANSCRIBER_DIAL_NUMBER)
                 .catch((e: any) => {
                     logger.error('Error dialing', e);
 
                     // let's back to the correct state
                     dispatch(setRequestingSubtitles(false, false, null));
+
+                    dispatch(showErrorNotification({
+                        titleKey: 'transcribing.failed'
+                    }));
+                    dispatch(setSubtitlesError(true));
                 });
         }
     }

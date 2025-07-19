@@ -1,3 +1,4 @@
+import { UPDATE_CONFERENCE_METADATA } from '../base/conference/actionTypes';
 import { ILocalParticipant, IParticipant } from '../base/participants/types';
 import {
   PERMISSIONS_MEETING_CHAT,
@@ -6,7 +7,6 @@ import {
 } from '../base/participants/constants';
 
 import ReducerRegistry from '../base/redux/ReducerRegistry';
-import { ChatTabs } from './constants';
 
 import {
     ADD_MESSAGE,
@@ -22,8 +22,8 @@ import {
     SET_FOCUSED_TAB,
     SET_CHAT_PERMISSIONS,
 } from './actionTypes';
+import { CHAT_SIZE, ChatTabs } from './constants';
 import { IMessage } from './types';
-import { UPDATE_CONFERENCE_METADATA } from '../base/conference/actionTypes';
 
 const DEFAULT_STATE = {
     groupChatWithPermissions: false,
@@ -36,10 +36,15 @@ const DEFAULT_STATE = {
     isLobbyChatActive: false,
     focusedTab: ChatTabs.CHAT,
     chatPermissions: {
-    meetingChat: PERMISSIONS_MEETING_CHAT.MUTED, // 默认允许自由聊天
-    lobbyChat: PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST, // 默认允许等候室私聊主持人
-    meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE.PROHIBITED, // 默认允许等候室私聊主持人
-  },
+        meetingChat: PERMISSIONS_MEETING_CHAT.MUTED, // 默认允许自由聊天
+        lobbyChat: PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST, // 默认允许等候室私聊主持人
+        meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE.PROHIBITED, // 默认允许等候室私聊主持人
+    },
+    isResizing: false,
+    width: {
+        current: CHAT_SIZE,
+        userSet: null
+    }
 };
 
 export interface IChatState {
@@ -47,6 +52,7 @@ export interface IChatState {
     groupChatWithPermissions: boolean;
     isLobbyChatActive: boolean;
     isOpen: boolean;
+    isResizing: boolean;
     lastReadMessage?: IMessage;
     lobbyMessageRecipient?: {
         id: string;
@@ -56,10 +62,14 @@ export interface IChatState {
     nbUnreadMessages: number;
     privateMessageRecipient?: IParticipant;
     chatPermissions: {
-    meetingChat: PERMISSIONS_MEETING_CHAT;
-    lobbyChat: PERMISSIONS_LOBBY_CHAT;
-    meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE;
-  };
+        meetingChat: PERMISSIONS_MEETING_CHAT;
+        lobbyChat: PERMISSIONS_LOBBY_CHAT;
+        meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE;
+    };
+    width: {
+        current: number;
+        userSet: number | null;
+    };
 }
 
 ReducerRegistry.register<IChatState>('features/chat', (state = DEFAULT_STATE, action): IChatState => {
@@ -245,6 +255,35 @@ ReducerRegistry.register<IChatState>('features/chat', (state = DEFAULT_STATE, ac
             focusedTab: action.tabId,
             nbUnreadMessages: action.tabId === ChatTabs.CHAT ? 0 : state.nbUnreadMessages
         };
+
+    case SET_CHAT_WIDTH: {
+        return {
+            ...state,
+            width: {
+                ...state.width,
+                current: action.width
+            }
+        };
+    }
+
+    case SET_USER_CHAT_WIDTH: {
+        const { width } = action;
+
+        return {
+            ...state,
+            width: {
+                current: width,
+                userSet: width
+            }
+        };
+    }
+
+    case SET_CHAT_IS_RESIZING: {
+        return {
+            ...state,
+            isResizing: action.resizing
+        };
+    }
     }
 
     return state;

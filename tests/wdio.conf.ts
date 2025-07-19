@@ -1,7 +1,6 @@
 import AllureReporter from '@wdio/allure-reporter';
 import { multiremotebrowser } from '@wdio/globals';
 import { Buffer } from 'buffer';
-import minimatch from 'minimatch';
 import path from 'node:path';
 import process from 'node:process';
 import pretty from 'pretty';
@@ -9,6 +8,7 @@ import pretty from 'pretty';
 import WebhookProxy from './helpers/WebhookProxy';
 import { getLogs, initLogger, logInfo } from './helpers/browserLogger';
 import { IContext } from './helpers/types';
+import { getRandomNumberAsStr } from './helpers/utils';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const allure = require('allure-commandline');
@@ -61,7 +61,7 @@ export const config: WebdriverIO.MultiremoteConfig = {
     runner: 'local',
 
     specs: [
-        'specs/**'
+        'specs/**/*.spec.ts'
     ],
     maxInstances: parseInt(process.env.MAX_INSTANCES || '1', 10), // if changing check onWorkerStart logic
 
@@ -213,14 +213,33 @@ export const config: WebdriverIO.MultiremoteConfig = {
             bInstance.iframePageBase = `file://${path.dirname(rpath)}`;
         }));
 
-        globalAny.ctx.roomName = `jitsimeettorture-${crypto.randomUUID()}`;
+        globalAny.ctx.roomName = `${testName}-${getRandomNumberAsStr(40, 3)}`;
+        if (process.env.ROOM_NAME_PREFIX) {
+            globalAny.ctx.roomName = `${process.env.ROOM_NAME_PREFIX.trim()}_${globalAny.ctx.roomName}`;
+        }
         if (process.env.ROOM_NAME_SUFFIX) {
             globalAny.ctx.roomName += `_${process.env.ROOM_NAME_SUFFIX.trim()}`;
         }
 
+        globalAny.ctx.roomName = globalAny.ctx.roomName.toLowerCase();
         globalAny.ctx.jwtPrivateKeyPath = process.env.JWT_PRIVATE_KEY_PATH;
         globalAny.ctx.jwtKid = process.env.JWT_KID;
         globalAny.ctx.isJaasAvailable = () => globalAny.ctx.jwtKid?.startsWith('vpaas-magic-cookie-');
+
+        // If we are running the iFrameApi tests, we need to mark it as such and if needed to create the proxy
+        // and connect to it.
+        if (testName.startsWith('iFrameApi')) {
+            globalAny.ctx.iframeAPI = true;
+
+            if (!globalAny.ctx.webhooksProxy
+                && process.env.WEBHOOKS_PROXY_URL && process.env.WEBHOOKS_PROXY_SHARED_SECRET) {
+                globalAny.ctx.webhooksProxy = new WebhookProxy(
+                    `${process.env.WEBHOOKS_PROXY_URL}&room=${globalAny.ctx.roomName}`,
+                    process.env.WEBHOOKS_PROXY_SHARED_SECRET,
+                    `${TEST_RESULTS_DIR}/webhooks-${cid}-${testName}.log`);
+                globalAny.ctx.webhooksProxy.connect();
+            }
+        }
     },
 
     after() {
@@ -254,22 +273,6 @@ export const config: WebdriverIO.MultiremoteConfig = {
      * @param {Object} suite - Suite details.
      */
     beforeSuite(suite) {
-        const { ctx }: any = global;
-
-        // If we are running the iFrameApi tests, we need to mark it as such and if needed to create the proxy
-        // and connect to it.
-        if (path.basename(suite.file).startsWith('iFrameApi')) {
-            ctx.iframeAPI = true;
-
-            if (!ctx.webhooksProxy
-                && process.env.WEBHOOKS_PROXY_URL && process.env.WEBHOOKS_PROXY_SHARED_SECRET) {
-                ctx.webhooksProxy = new WebhookProxy(
-                    `${process.env.WEBHOOKS_PROXY_URL}&room=${ctx.roomName}`,
-                    process.env.WEBHOOKS_PROXY_SHARED_SECRET);
-                ctx.webhooksProxy.connect();
-            }
-        }
-
         multiremotebrowser.instances.forEach((instance: string) => {
             logInfo(multiremotebrowser.getInstance(instance),
                 `---=== Begin ${suite.file.substring(suite.file.lastIndexOf('/') + 1)} ===---`);
@@ -292,26 +295,6 @@ export const config: WebdriverIO.MultiremoteConfig = {
         multiremotebrowser.instances.forEach((instance: string) => {
             logInfo(multiremotebrowser.getInstance(instance), `---=== Start test ${test.title} ===---`);
         });
-    },
-
-    /**
-     * Gets executed before a worker process is spawned and can be used to initialize specific service
-     * for that worker as well as modify runtime environments in an async fashion.
-     */
-    onWorkerStart(...args) {
-        // We run a worker per suite, and replay on this logic here
-        if (args[2].length > 1) {
-            console.warn('Our worker is supposed to get a single suite, but got more than one');
-
-            return;
-        }
-
-        // We skip the suite tests if the suite is marked as such, we used that from firefox overwrite
-        // @ts-ignore
-        if (config?.ffExcludes?.some(
-                (e: string) => minimatch(args[2][0].replace('file://', ''), `${__dirname}/${e}`))) {
-            args[2].pop();
-        }
     },
 
     /**

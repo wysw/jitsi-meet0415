@@ -205,9 +205,9 @@ const ReactionsMenu = (props: IProps) => {
                 && <GifsMenu
                     columns = { parent === IReactionsMenuParent.OverflowMenu ? 1 : undefined }
                     parent = { parent } />}
-            {/* <div className = 'reactions-row'>
+            <div className = 'reactions-row'>
                 { buttons }
-            </div> */}
+            </div>
             {showRaisedHand && (
                 <div className = 'raise-hand-row'>
                     <ReactionButton

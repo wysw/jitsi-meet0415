@@ -12,6 +12,7 @@ import {
     requestEnableAudioModeration,
     requestEnableVideoModeration
 } from '../../../av-moderation/actions';
+import { MEDIA_TYPE } from '../../../av-moderation/constants';
 import {
     isEnabled as isAvModerationEnabled,
     isSupported as isAvModerationSupported
@@ -21,11 +22,9 @@ import { hideSheet, openDialog } from '../../../base/dialog/actions';
 import BottomSheet from '../../../base/dialog/components/native/BottomSheet';
 import Icon from '../../../base/icons/components/Icon';
 import { IconCheck, IconRaiseHand, IconVideoOff } from '../../../base/icons/svg';
-import { MEDIA_TYPE } from '../../../base/media/constants';
 import { raiseHand } from '../../../base/participants/actions';
-import { getParticipantCount, getRaiseHandsQueue, isEveryoneModerator, isLocalParticipantModerator }
+import { getParticipantCount, getRaiseHandsQueue, isLocalParticipantModerator }
     from '../../../base/participants/functions';
-    
 import { LOWER_HAND_MESSAGE } from '../../../base/tracks/constants';
 import MuteEveryonesVideoDialog
     from '../../../video-menu/components/native/MuteEveryonesVideoDialog';
@@ -53,36 +52,36 @@ export const ContextMenuMore = () => {
 
     const isModerationSupported = useSelector((state: IReduxState) => isAvModerationSupported()(state));
     const chatPermissions = useSelector(getChatPermissions);
-  const handleChatPermissionChange = useCallback(
-    (permission: string) => {
-      dispatch(
-        setChatPermissions({
-          meetingChat: permission,
-        })
-      );
-    },
-    [dispatch]
-  );
-  const handleMeetingScreenSharePermissionChange = useCallback(
-    (permission: string) => {
-      dispatch(
-        setChatPermissions({
-            meetingScreenShare: permission,
-        })
-      );
-    },
-    [dispatch]
-  );
-  const handleLobbyChatPermissionChange = useCallback(
-    (permission: string) => {
-      dispatch(
-        setChatPermissions({
-          lobbyChat: permission,
-        })
-      );
-    },
-    [dispatch]
-  );
+    const handleChatPermissionChange = useCallback(
+        (permission: string) => {
+        dispatch(
+            setChatPermissions({
+            meetingChat: permission,
+            })
+        );
+        },
+        [dispatch]
+    );
+    const handleMeetingScreenSharePermissionChange = useCallback(
+        (permission: string) => {
+        dispatch(
+            setChatPermissions({
+                meetingScreenShare: permission,
+            })
+        );
+        },
+        [dispatch]
+    );
+    const handleLobbyChatPermissionChange = useCallback(
+        (permission: string) => {
+        dispatch(
+            setChatPermissions({
+            lobbyChat: permission,
+            })
+        );
+        },
+        [dispatch]
+    );
 
     
     const participantCount = useSelector(getParticipantCount);

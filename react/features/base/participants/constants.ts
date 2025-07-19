@@ -64,15 +64,10 @@ export const PARTICIPANT_LEFT_SOUND_ID = 'PARTICIPANT_LEFT_SOUND';
  * @enum {string}
  */
 export const PARTICIPANT_ROLE = {
-  MODERATOR: 'moderator',
-  NONE: 'none',
+    MODERATOR: 'moderator',
+    NONE: 'none',
   PARTICIPANT: 'participant',
 };
-
-export enum TEXT_OVERFLOW_TYPES {
-  ELLIPSIS = 'ellipsis',
-  SCROLL_ON_HOVER = 'scroll-on-hover',
-}
 
 /**
  * Meeting chat permissions for participants in the meeting.

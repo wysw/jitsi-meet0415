@@ -14,6 +14,8 @@ import {
   isLocalParticipantModerator,
 } from '../base/participants/functions';
 import { escapeRegexp } from '../base/util/helpers';
+import { getParticipantsPaneWidth } from '../participants-pane/functions';
+import { VIDEO_SPACE_MIN_SIZE } from '../video-layout/constants';
 
 import { MESSAGE_TYPE_ERROR, MESSAGE_TYPE_LOCAL, TIMESTAMP_FORMAT } from './constants';
 import {
@@ -52,27 +54,27 @@ const SLACK_EMOJI_REGEXP_ARRAY: Array<[RegExp, string]> = [];
 (function() {
     for (const [ key, value ] of Object.entries(aliases)) {
 
-    // Add ASCII emoticons
-    const asciiEmoticons = emojiAsciiAliases[key];
+        // Add ASCII emoticons
+        const asciiEmoticons = emojiAsciiAliases[key];
 
-    if (asciiEmoticons) {
+        if (asciiEmoticons) {
             const asciiEscapedValues = asciiEmoticons.map((v: string) => escapeRegexp(v));
 
-      const asciiRegexp = `(${asciiEscapedValues.join('|')})`;
+            const asciiRegexp = `(${asciiEscapedValues.join('|')})`;
 
-      // Escape urls
+            // Escape urls
             const formattedAsciiRegexp = key === 'confused'
                 ? `(?=(${asciiRegexp}))(:(?!//).)`
                 : asciiRegexp;
 
             ASCII_EMOTICON_REGEXP_ARRAY.push([ new RegExp(formattedAsciiRegexp, 'g'), value as string ]);
-    }
+        }
 
-    // Add slack-type emojis
-    const emojiRegexp = `\\B(${escapeRegexp(`:${key}:`)})\\B`;
+        // Add slack-type emojis
+        const emojiRegexp = `\\B(${escapeRegexp(`:${key}:`)})\\B`;
 
         SLACK_EMOJI_REGEXP_ARRAY.push([ new RegExp(emojiRegexp, 'g'), value as string ]);
-  }
+    }
 })();
 
 /**
@@ -83,17 +85,17 @@ const SLACK_EMOJI_REGEXP_ARRAY: Array<[RegExp, string]> = [];
  * @returns {string}
  */
 export function replaceNonUnicodeEmojis(message: string): string {
-  let replacedMessage = message;
+    let replacedMessage = message;
 
     for (const [ regexp, replaceValue ] of SLACK_EMOJI_REGEXP_ARRAY) {
-    replacedMessage = replacedMessage.replace(regexp, replaceValue);
-  }
+        replacedMessage = replacedMessage.replace(regexp, replaceValue);
+    }
 
     for (const [ regexp, replaceValue ] of ASCII_EMOTICON_REGEXP_ARRAY) {
-    replacedMessage = replacedMessage.replace(regexp, replaceValue);
-  }
+        replacedMessage = replacedMessage.replace(regexp, replaceValue);
+    }
 
-  return replacedMessage;
+    return replacedMessage;
 }
 
 /**
@@ -103,38 +105,38 @@ export function replaceNonUnicodeEmojis(message: string): string {
  * @returns {number} The number of unread messages.
  */
 export function getUnreadCount(state: IReduxState) {
-  const { lastReadMessage, messages } = state['features/chat'];
-  const messagesCount = messages.length;
+    const { lastReadMessage, messages } = state['features/chat'];
+    const messagesCount = messages.length;
 
-  if (!messagesCount) {
-    return 0;
-  }
+    if (!messagesCount) {
+        return 0;
+    }
 
-  let reactionMessages = 0;
+    let reactionMessages = 0;
     let lastReadIndex: number;
 
-  if (navigator.product === 'ReactNative') {
-    // React native stores the messages in a reversed order.
-    lastReadIndex = messages.indexOf(<IMessage>lastReadMessage);
+    if (navigator.product === 'ReactNative') {
+        // React native stores the messages in a reversed order.
+        lastReadIndex = messages.indexOf(<IMessage>lastReadMessage);
 
-    for (let i = 0; i < lastReadIndex; i++) {
-      if (messages[i].isReaction) {
-        reactionMessages++;
-      }
+        for (let i = 0; i < lastReadIndex; i++) {
+            if (messages[i].isReaction) {
+                reactionMessages++;
+            }
+        }
+
+        return lastReadIndex - reactionMessages;
     }
 
-    return lastReadIndex - reactionMessages;
-  }
+    lastReadIndex = messages.lastIndexOf(<IMessage>lastReadMessage);
 
-  lastReadIndex = messages.lastIndexOf(<IMessage>lastReadMessage);
-
-  for (let i = lastReadIndex + 1; i < messagesCount; i++) {
-    if (messages[i].isReaction) {
-      reactionMessages++;
+    for (let i = lastReadIndex + 1; i < messagesCount; i++) {
+        if (messages[i].isReaction) {
+            reactionMessages++;
+        }
     }
-  }
 
-  return messagesCount - (lastReadIndex + 1) - reactionMessages;
+    return messagesCount - (lastReadIndex + 1) - reactionMessages;
 }
 
 /**
@@ -146,7 +148,7 @@ export function getUnreadCount(state: IReduxState) {
 export function areSmileysDisabled(state: IReduxState) {
     const disableChatSmileys = state['features/base/config']?.disableChatSmileys === true;
 
-  return disableChatSmileys;
+    return disableChatSmileys;
 }
 
 /**
@@ -167,11 +169,11 @@ export function getFormattedTimestamp(message: IMessage) {
  * @returns {string}
  */
 export function getMessageText(message: IMessage) {
-  return message.messageType === MESSAGE_TYPE_ERROR
-    ? i18next.t('chat.error', {
+    return message.messageType === MESSAGE_TYPE_ERROR
+        ? i18next.t('chat.error', {
             error: message.message
-      })
-    : message.message;
+        })
+        : message.message;
 }
 
 
@@ -287,9 +289,9 @@ export function hasScreenSharePermissions(state: IReduxState) {
  * @returns {string}
  */
 export function getPrivateNoticeMessage(message: IMessage) {
-  return i18next.t('chat.privateNotice', {
+    return i18next.t('chat.privateNotice', {
         recipient: message.messageType === MESSAGE_TYPE_LOCAL ? message.recipient : i18next.t('chat.you')
-  });
+    });
 }
 
 /**
@@ -329,11 +331,25 @@ export function getChatPermissions(stateful: IStateful) {
  * @returns {boolean} - Returns true if the participant is not allowed to send group messages.
  */
 export function isSendGroupChatDisabled(state: IReduxState) {
-  const { groupChatRequiresPermission } = state['features/dynamic-branding'];
+    const { groupChatRequiresPermission } = state['features/dynamic-branding'];
 
-  if (!groupChatRequiresPermission) {
-      return false;
-  }
+    if (!groupChatRequiresPermission) {
+        return false;
+    }
 
-  return !isJwtFeatureEnabled(state, MEET_FEATURES.SEND_GROUPCHAT, false);
+    return !isJwtFeatureEnabled(state, MEET_FEATURES.SEND_GROUPCHAT, false);
+}
+
+/**
+ * Calculates the maximum width available for the chat panel based on the current window size
+ * and other UI elements.
+ *
+ * @param {IReduxState} state - The Redux state containing the application's current state.
+ * @returns {number} The maximum width in pixels available for the chat panel. Returns 0 if there
+ * is no space available.
+ */
+export function getChatMaxSize(state: IReduxState) {
+    const { clientWidth } = state['features/base/responsive-ui'];
+
+    return Math.max(clientWidth - getParticipantsPaneWidth(state) - VIDEO_SPACE_MIN_SIZE, 0);
 }

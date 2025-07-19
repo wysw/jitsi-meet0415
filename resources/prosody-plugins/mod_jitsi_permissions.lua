@@ -16,7 +16,7 @@ local muc_domain_prefix = module:get_option_string('muc_mapper_domain_prefix', '
 
 local muc_domain_base = module:get_option_string('muc_mapper_domain_base');
 if not muc_domain_base then
-    module:log('warn', 'No "muc_domain_base" option set, disabling kick check endpoint.');
+    module:log('warn', 'No "muc_domain_base" option set, disabling module.');
     return ;
 end
 
@@ -71,13 +71,16 @@ function process_set_affiliation(event)
     end
 
     if previous_affiliation == 'none' and affiliation == 'owner' then
-        occupant_session.granted_jitsi_meet_context_features = actor_session.jitsi_meet_context_features;
+        occupant_session.jitsi_meet_context_features = actor_session.jitsi_meet_context_features;
         if actor_session.jitsi_meet_context_user then
-            occupant_session.granted_jitsi_meet_context_user_id = actor_session.jitsi_meet_context_user['id'];
+            occupant_session.granted_jitsi_meet_context_user_id = actor_session.jitsi_meet_context_user['id']
+                or actor_session.granted_jitsi_meet_context_user_id;
         end
-        occupant_session.granted_jitsi_meet_context_group_id = actor_session.jitsi_meet_context_group;
+        occupant_session.granted_jitsi_meet_context_group_id = actor_session.jitsi_meet_context_group
+            or actor_session.granted_jitsi_meet_context_group_id;
+        -- even if token and features are set we may want to re-send permissions
+        occupant_session.force_permissions_update = true;
     elseif previous_affiliation == 'owner' and ( affiliation == 'member' or affiliation == 'none' ) then
-        occupant_session.granted_jitsi_meet_context_features = nil;
         occupant_session.granted_jitsi_meet_context_user_id = nil;
         occupant_session.granted_jitsi_meet_context_group_id = nil;
 
@@ -112,50 +115,56 @@ function filter_stanza(stanza, session)
     end
 
     local muc_x = stanza:get_child('x', MUC_NS..'#user');
-    if not muc_x then
+    if not muc_x or not presence_check_status(muc_x, '110') then
         return stanza;
     end
 
     local room = get_room_from_jid(room_jid_match_rewrite(jid.bare(stanza.attr.from)));
 
-    if not room or not room.send_default_permissions_to or is_healthcheck_room(room.jid) then
+    if not room or is_healthcheck_room(room.jid)  then
         return stanza;
     end
 
-    if session.auth_token and session.jitsi_meet_context_features then -- token and features are set so skip
-        room.send_default_permissions_to[bare_to] = nil;
-        return stanza;
+    if not room.send_default_permissions_to then
+        room.send_default_permissions_to = {};
     end
 
-    -- we are sending permissions only when becoming a member
-    local is_moderator = false;
-    for item in muc_x:childtags('item') do
-        if item.attr.role == 'moderator' then
-            is_moderator = true;
-            break;
+    if not session.force_permissions_update then
+        if session.auth_token and session.jitsi_meet_context_features then -- token and features are set so skip
+            room.send_default_permissions_to[bare_to] = nil;
+            return stanza;
+        end
+
+        -- we are sending permissions only when becoming a member
+        local is_moderator = false;
+        for item in muc_x:childtags('item') do
+            if item.attr.role == 'moderator' then
+                is_moderator = true;
+                break;
+            end
+        end
+
+        if not is_moderator then
+            return stanza;
+        end
+
+        if not room.send_default_permissions_to[bare_to] then
+            return stanza;
         end
     end
 
-    if not is_moderator or not room.send_default_permissions_to[bare_to]
-        or not presence_check_status(muc_x, '110') then
-        return stanza;
-    end
+    session.force_permissions_update = false;
 
-    local permissions_to_send = session.granted_jitsi_meet_context_features or default_permissions;
+    if not session.jitsi_meet_context_features then
+        session.jitsi_meet_context_features = default_permissions;
+    end
 
     room.send_default_permissions_to[bare_to] = nil;
 
-    if not session.granted_jitsi_meet_context_features and not session.jitsi_meet_context_features then
-        session.jitsi_meet_context_features = {};
-    end
-
     stanza:tag('permissions', { xmlns='http://jitsi.org/jitmeet' });
-    for k, v in pairs(permissions_to_send) do
+    for k, v in pairs(session.jitsi_meet_context_features) do
         local val = tostring(v);
         stanza:tag('p', { name = k, val = val }):up();
-        if session.jitsi_meet_context_features then
-            session.jitsi_meet_context_features[k] = val;
-        end
     end
     stanza:up();
 
@@ -163,6 +172,9 @@ function filter_stanza(stanza, session)
 end
 
 -- we need to indicate that we will send permissions if we need to
+-- we need to handle granted features and stuff in the pre-set hook so they are unavailable
+-- when the self presence is set, so we can update the client, the checks
+-- whether the actor is allowed to set the affiliation are done before pre-set hook is fired
 module:hook('muc-pre-set-affiliation', function(event)
     local jid, room = event.jid, event.room;
 
@@ -170,8 +182,9 @@ module:hook('muc-pre-set-affiliation', function(event)
         room.send_default_permissions_to = {};
     end
     room.send_default_permissions_to[jid] = true;
+
+    process_set_affiliation(event);
 end);
-module:hook('muc-set-affiliation', process_set_affiliation);
 
 function filter_session(session)
     -- domain mapper is filtering on default priority 0
