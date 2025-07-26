@@ -315,11 +315,7 @@ StateListenerRegistry.register(
  * @returns {void}
  */
 function _addChatMsgListener(conference: IJitsiConference, store: IStore) {
-    if (store.getState()['features/base/config'].iAmRecorder) {
-        // We don't register anything on web if we are in iAmRecorder mode
-        return;
-    }
-
+    
     const localParticipant = getLocalParticipant(store.getState()); // 获取当前用户信息
     const participantId = localParticipant?.id; // 获取当前用户的 ID
     conference.addCommandListener('chat-permissions', function({value}: any) {
@@ -332,7 +328,10 @@ function _addChatMsgListener(conference: IJitsiConference, store: IStore) {
         });
         }        
     });
-
+    if (store.getState()['features/base/config'].iAmRecorder) {
+        // We don't register anything on web if we are in iAmRecorder mode
+        return;
+    }
     conference.on(
         JitsiConferenceEvents.MESSAGE_RECEIVED,
         /* eslint-disable max-params */
