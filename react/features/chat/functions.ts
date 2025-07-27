@@ -9,13 +9,12 @@ import { getLocalizedDateFormatter } from '../base/i18n/dateUtil';
 import i18next from '../base/i18n/i18next';
 import { MEET_FEATURES } from '../base/jwt/constants';
 import { isJwtFeatureEnabled } from '../base/jwt/functions';
-import {
-  getParticipantById,
-  isLocalParticipantModerator,
-} from '../base/participants/functions';
+import { getParticipantById, isPrivateChatEnabled, isLocalParticipantModerator } from '../base/participants/functions';
+import { IParticipant } from '../base/participants/types';
 import { escapeRegexp } from '../base/util/helpers';
 import { getParticipantsPaneWidth } from '../participants-pane/functions';
 import { VIDEO_SPACE_MIN_SIZE } from '../video-layout/constants';
+import { IVisitorChatParticipant } from '../visitors/types';
 
 import { MESSAGE_TYPE_ERROR, MESSAGE_TYPE_LOCAL, TIMESTAMP_FORMAT } from './constants';
 import {
@@ -188,9 +187,24 @@ export function getCanReplyToMessage(state: IReduxState, message: IMessage) {
     const { knocking } = state['features/lobby'];
     const participant = getParticipantById(state, message.participantId);
 
-    return Boolean(participant)
+    // Check if basic reply conditions are met
+    const basicCanReply = (Boolean(participant) || message.isFromVisitor)
         && (message.privateMessage || (message.lobbyChat && !knocking))
         && message.messageType !== MESSAGE_TYPE_LOCAL;
+
+    if (!basicCanReply) {
+        return false;
+    }
+
+    // Check private chat configuration for visitor messages
+    if (message.isFromVisitor) {
+        const visitorParticipant = { id: message.participantId, name: message.displayName, isVisitor: true as const };
+
+        return isPrivateChatEnabled(visitorParticipant, state);
+    }
+
+    // For non-visitor messages, use the regular participant
+    return isPrivateChatEnabled(participant, state);
 }
 
 /**
@@ -271,17 +285,6 @@ export function hasChatPermissions(state: IReduxState) {
 
   return true; // 通过所有权限检查，允许发送消息
 }
-
-export function hasScreenSharePermissions(state: IReduxState) {
-  // 判断当前用户是否是主持人（主持人不受聊天权限限制）
-  if (isLocalParticipantModerator(state)) {
-    return true;
-  }
-  const { chatPermissions } =
-    state['features/chat'];    
-  return chatPermissions.meetingScreenShare === PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW; // 通过所有权限检查，允许发送消息
-}
-
 /**
  * Returns the message that is displayed as a notice for private messages.
  *
@@ -289,40 +292,22 @@ export function hasScreenSharePermissions(state: IReduxState) {
  * @returns {string}
  */
 export function getPrivateNoticeMessage(message: IMessage) {
+    let recipient;
+
+    if (message.messageType === MESSAGE_TYPE_LOCAL) {
+        // For messages sent by local user, show the recipient name
+        // For visitor messages, use the visitor's display name with indicator
+        recipient = message.sentToVisitor ? `${message.recipient} ${i18next.t('visitors.chatIndicator')}` : message.recipient;
+    } else {
+        // For messages received from others, show "you"
+        recipient = i18next.t('chat.you');
+    }
+
     return i18next.t('chat.privateNotice', {
-        recipient: message.messageType === MESSAGE_TYPE_LOCAL ? message.recipient : i18next.t('chat.you')
+        recipient
     });
 }
 
-/**
- * 获取当前会议和等候室的聊天权限设置。
- *
- * @param {IStateful} stateful - 代表 Redux 状态的参数，可以是 Redux store 或者一个函数。
- * @returns {Object} chatPermissions - 当前会议和等候室的聊天权限配置。
- *
- * `chatPermissions` 包含两个权限配置：
- * - **meetingChat**: 控制会议中的聊天权限，可能的值：
- *   - `PERMISSIONS_MEETING_CHAT.FREE`: 允许所有人自由聊天。
- *   - `PERMISSIONS_MEETING_CHAT.PUBLIC_ONLY`: 仅允许公开聊天。
- *   - `PERMISSIONS_MEETING_CHAT.PRIVATETO_HOST`: 仅允许私聊主持人。
- *   - `PERMISSIONS_MEETING_CHAT.MUTED`: 禁止所有成员聊天。
- *
- * - **lobbyChat**: 控制等候室中的聊天权限，可能的值：
- *   - `PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST`: 仅允许私聊主持人。
- *   - `PERMISSIONS_LOBBY_CHAT.MUTED`: 禁止所有成员聊天。
- *
- * 使用示例：
- * ```ts
- * const chatPermissions = getChatPermissions(state);
- * console.log(chatPermissions.meetingChat); // 输出会议中的聊天权限
- * console.log(chatPermissions.lobbyChat);  // 输出等候室中的聊天权限
- * ```
- */
-export function getChatPermissions(stateful: IStateful) {
-  const state = toState(stateful);
-  const { chatPermissions } = state['features/chat'];
-  return chatPermissions;
-}
 
 /**
  * Check if participant is not allowed to send group messages.
@@ -352,4 +337,16 @@ export function getChatMaxSize(state: IReduxState) {
     const { clientWidth } = state['features/base/responsive-ui'];
 
     return Math.max(clientWidth - getParticipantsPaneWidth(state) - VIDEO_SPACE_MIN_SIZE, 0);
+}
+
+/**
+ * Type guard to check if a participant is a visitor chat participant.
+ *
+ * @param {IParticipant | IVisitorChatParticipant | undefined} participant - The participant to check.
+ * @returns {boolean} - True if the participant is a visitor chat participant.
+ */
+export function isVisitorChatParticipant(
+        participant?: IParticipant | IVisitorChatParticipant
+): participant is IVisitorChatParticipant {
+    return Boolean(participant && 'isVisitor' in participant && participant.isVisitor === true);
 }

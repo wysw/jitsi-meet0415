@@ -207,8 +207,7 @@ class ChatInput extends Component<IProps, IState> {
                         value = { this.state.message } />
                     <Button
                         accessibilityLabel = { this.props.t('chat.sendButton') }
-                        disabled = { !this.state.message.trim()
-                            || (this.props._isSendGroupChatDisabled && !this.props._privateMessageRecipientId) }
+                        disabled = { !this.state.message.trim() }
                         icon = { IconSend }
                         onClick = { this._onSubmitMessage }
                         size = { isMobileBrowser() ? 'large' : 'medium' } />
