@@ -925,7 +925,7 @@
             "stopEveryonesVideo": "关闭所有人摄像头",
             "stopVideo": "关闭摄像头",
             "unblockEveryoneMicCamera": "允许所有人开启麦克风和摄像头",
-            "videoModeration": "自行开启视频",
+            "videoModeration": "允许开启视频",
             "allowFreeSpeech": "允许自由聊天",
             "onlyPublicComments": "仅允许公开聊天",
             "chatWithHostOnly": "仅允许私聊主持人",

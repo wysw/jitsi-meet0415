@@ -735,7 +735,6 @@ function _checkChatPermissions(
   ): { value: boolean; msg: string } {
     // 获取状态中的聊天权限
     const chatState = state['features/chat'];
-    debugger;
     const { privateMessageRecipient, isLobbyChatActive, lobbyMessageRecipient } =
       state['features/chat'];
     const chatPermissions = chatState.chatPermissions; // 获取当前的聊天权限
