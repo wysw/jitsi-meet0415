@@ -45,7 +45,7 @@ export interface IParticipant {
   chatPermissions?: {
     meetingChat: PERMISSIONS_MEETING_CHAT;
     lobbyChat: PERMISSIONS_LOBBY_CHAT;
-    meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE
+    // meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE
   };
 }
 

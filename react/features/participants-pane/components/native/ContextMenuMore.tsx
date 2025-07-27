@@ -62,16 +62,16 @@ export const ContextMenuMore = () => {
         },
         [dispatch]
     );
-    const handleMeetingScreenSharePermissionChange = useCallback(
-        (permission: string) => {
-        dispatch(
-            setChatPermissions({
-                meetingScreenShare: permission,
-            })
-        );
-        },
-        [dispatch]
-    );
+    // const handleMeetingScreenSharePermissionChange = useCallback(
+    //     (permission: string) => {
+    //     dispatch(
+    //         setChatPermissions({
+    //             meetingScreenShare: permission,
+    //         })
+    //     );
+    //     },
+    //     [dispatch]
+    // );
     const handleLobbyChatPermissionChange = useCallback(
         (permission: string) => {
         dispatch(
@@ -159,7 +159,7 @@ export const ContextMenuMore = () => {
                     </TouchableOpacity>}
             </>}
                 {(isModerator || participantCount === 1) && <>
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         onPress={() =>
                             handleMeetingScreenSharePermissionChange(
                             chatPermissions.meetingScreenShare ===
@@ -177,7 +177,7 @@ export const ContextMenuMore = () => {
                         <Text style={styles.contextMenuItemText}>
                         {t('participantsPane.actions.allowScreenShare')}
                         </Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <TouchableOpacity
                         onPress={() =>
                         handleLobbyChatPermissionChange(
