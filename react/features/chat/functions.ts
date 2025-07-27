@@ -53,27 +53,27 @@ const SLACK_EMOJI_REGEXP_ARRAY: Array<[RegExp, string]> = [];
 (function() {
     for (const [ key, value ] of Object.entries(aliases)) {
 
-        // Add ASCII emoticons
-        const asciiEmoticons = emojiAsciiAliases[key];
+    // Add ASCII emoticons
+    const asciiEmoticons = emojiAsciiAliases[key];
 
-        if (asciiEmoticons) {
+    if (asciiEmoticons) {
             const asciiEscapedValues = asciiEmoticons.map((v: string) => escapeRegexp(v));
 
-            const asciiRegexp = `(${asciiEscapedValues.join('|')})`;
+      const asciiRegexp = `(${asciiEscapedValues.join('|')})`;
 
-            // Escape urls
+      // Escape urls
             const formattedAsciiRegexp = key === 'confused'
                 ? `(?=(${asciiRegexp}))(:(?!//).)`
                 : asciiRegexp;
 
             ASCII_EMOTICON_REGEXP_ARRAY.push([ new RegExp(formattedAsciiRegexp, 'g'), value as string ]);
-        }
+    }
 
-        // Add slack-type emojis
-        const emojiRegexp = `\\B(${escapeRegexp(`:${key}:`)})\\B`;
+    // Add slack-type emojis
+    const emojiRegexp = `\\B(${escapeRegexp(`:${key}:`)})\\B`;
 
         SLACK_EMOJI_REGEXP_ARRAY.push([ new RegExp(emojiRegexp, 'g'), value as string ]);
-    }
+  }
 })();
 
 /**
@@ -84,17 +84,17 @@ const SLACK_EMOJI_REGEXP_ARRAY: Array<[RegExp, string]> = [];
  * @returns {string}
  */
 export function replaceNonUnicodeEmojis(message: string): string {
-    let replacedMessage = message;
+  let replacedMessage = message;
 
     for (const [ regexp, replaceValue ] of SLACK_EMOJI_REGEXP_ARRAY) {
-        replacedMessage = replacedMessage.replace(regexp, replaceValue);
-    }
+    replacedMessage = replacedMessage.replace(regexp, replaceValue);
+  }
 
     for (const [ regexp, replaceValue ] of ASCII_EMOTICON_REGEXP_ARRAY) {
-        replacedMessage = replacedMessage.replace(regexp, replaceValue);
-    }
+    replacedMessage = replacedMessage.replace(regexp, replaceValue);
+  }
 
-    return replacedMessage;
+  return replacedMessage;
 }
 
 /**
@@ -104,38 +104,38 @@ export function replaceNonUnicodeEmojis(message: string): string {
  * @returns {number} The number of unread messages.
  */
 export function getUnreadCount(state: IReduxState) {
-    const { lastReadMessage, messages } = state['features/chat'];
-    const messagesCount = messages.length;
+  const { lastReadMessage, messages } = state['features/chat'];
+  const messagesCount = messages.length;
 
-    if (!messagesCount) {
-        return 0;
-    }
+  if (!messagesCount) {
+    return 0;
+  }
 
-    let reactionMessages = 0;
+  let reactionMessages = 0;
     let lastReadIndex: number;
 
-    if (navigator.product === 'ReactNative') {
-        // React native stores the messages in a reversed order.
-        lastReadIndex = messages.indexOf(<IMessage>lastReadMessage);
+  if (navigator.product === 'ReactNative') {
+    // React native stores the messages in a reversed order.
+    lastReadIndex = messages.indexOf(<IMessage>lastReadMessage);
 
-        for (let i = 0; i < lastReadIndex; i++) {
-            if (messages[i].isReaction) {
-                reactionMessages++;
-            }
-        }
-
-        return lastReadIndex - reactionMessages;
+    for (let i = 0; i < lastReadIndex; i++) {
+      if (messages[i].isReaction) {
+        reactionMessages++;
+      }
     }
 
-    lastReadIndex = messages.lastIndexOf(<IMessage>lastReadMessage);
+    return lastReadIndex - reactionMessages;
+  }
 
-    for (let i = lastReadIndex + 1; i < messagesCount; i++) {
-        if (messages[i].isReaction) {
-            reactionMessages++;
-        }
+  lastReadIndex = messages.lastIndexOf(<IMessage>lastReadMessage);
+
+  for (let i = lastReadIndex + 1; i < messagesCount; i++) {
+    if (messages[i].isReaction) {
+      reactionMessages++;
     }
+  }
 
-    return messagesCount - (lastReadIndex + 1) - reactionMessages;
+  return messagesCount - (lastReadIndex + 1) - reactionMessages;
 }
 
 /**
@@ -147,7 +147,7 @@ export function getUnreadCount(state: IReduxState) {
 export function areSmileysDisabled(state: IReduxState) {
     const disableChatSmileys = state['features/base/config']?.disableChatSmileys === true;
 
-    return disableChatSmileys;
+  return disableChatSmileys;
 }
 
 /**
@@ -168,11 +168,11 @@ export function getFormattedTimestamp(message: IMessage) {
  * @returns {string}
  */
 export function getMessageText(message: IMessage) {
-    return message.messageType === MESSAGE_TYPE_ERROR
-        ? i18next.t('chat.error', {
+  return message.messageType === MESSAGE_TYPE_ERROR
+    ? i18next.t('chat.error', {
             error: message.message
-        })
-        : message.message;
+      })
+    : message.message;
 }
 
 
@@ -303,11 +303,40 @@ export function getPrivateNoticeMessage(message: IMessage) {
         recipient = i18next.t('chat.you');
     }
 
-    return i18next.t('chat.privateNotice', {
+  return i18next.t('chat.privateNotice', {
         recipient
-    });
+  });
 }
 
+/**
+ * 获取当前会议和等候室的聊天权限设置。
+ *
+ * @param {IStateful} stateful - 代表 Redux 状态的参数，可以是 Redux store 或者一个函数。
+ * @returns {Object} chatPermissions - 当前会议和等候室的聊天权限配置。
+ *
+ * `chatPermissions` 包含两个权限配置：
+ * - **meetingChat**: 控制会议中的聊天权限，可能的值：
+ *   - `PERMISSIONS_MEETING_CHAT.FREE`: 允许所有人自由聊天。
+ *   - `PERMISSIONS_MEETING_CHAT.PUBLIC_ONLY`: 仅允许公开聊天。
+ *   - `PERMISSIONS_MEETING_CHAT.PRIVATETO_HOST`: 仅允许私聊主持人。
+ *   - `PERMISSIONS_MEETING_CHAT.MUTED`: 禁止所有成员聊天。
+ *
+ * - **lobbyChat**: 控制等候室中的聊天权限，可能的值：
+ *   - `PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST`: 仅允许私聊主持人。
+ *   - `PERMISSIONS_LOBBY_CHAT.MUTED`: 禁止所有成员聊天。
+ *
+ * 使用示例：
+ * ```ts
+ * const chatPermissions = getChatPermissions(state);
+ * console.log(chatPermissions.meetingChat); // 输出会议中的聊天权限
+ * console.log(chatPermissions.lobbyChat);  // 输出等候室中的聊天权限
+ * ```
+ */
+export function getChatPermissions(stateful: IStateful) {
+  const state = toState(stateful);
+  const { chatPermissions } = state['features/chat'];
+  return chatPermissions;
+}
 
 /**
  * Check if participant is not allowed to send group messages.
@@ -316,13 +345,13 @@ export function getPrivateNoticeMessage(message: IMessage) {
  * @returns {boolean} - Returns true if the participant is not allowed to send group messages.
  */
 export function isSendGroupChatDisabled(state: IReduxState) {
-    const { groupChatRequiresPermission } = state['features/dynamic-branding'];
+  const { groupChatRequiresPermission } = state['features/dynamic-branding'];
 
-    if (!groupChatRequiresPermission) {
-        return false;
-    }
+  if (!groupChatRequiresPermission) {
+      return false;
+  }
 
-    return !isJwtFeatureEnabled(state, MEET_FEATURES.SEND_GROUPCHAT, false);
+  return !isJwtFeatureEnabled(state, MEET_FEATURES.SEND_GROUPCHAT, false);
 }
 
 /**
