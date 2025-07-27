@@ -22,9 +22,9 @@ import {
 } from './constants';
 
 const initialState = {
-    audioModerationEnabled: true,
-    desktopModerationEnabled: true,
-    videoModerationEnabled: true,
+    audioModerationEnabled: false,
+    desktopModerationEnabled: false,
+    videoModerationEnabled: false,
     audioWhitelist: {},
     desktopWhitelist: {},
     videoWhitelist: {},
