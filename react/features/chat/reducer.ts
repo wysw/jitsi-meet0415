@@ -2,8 +2,7 @@ import { UPDATE_CONFERENCE_METADATA } from '../base/conference/actionTypes';
 import { ILocalParticipant, IParticipant } from '../base/participants/types';
 import {
   PERMISSIONS_MEETING_CHAT,
-  PERMISSIONS_LOBBY_CHAT,
-  PERMISSIONS_MEETING_SCREEN_SHARE
+  PERMISSIONS_LOBBY_CHAT
 } from '../base/participants/constants';
 
 import ReducerRegistry from '../base/redux/ReducerRegistry';
@@ -67,7 +66,6 @@ export interface IChatState {
     chatPermissions: {
         meetingChat: PERMISSIONS_MEETING_CHAT;
         lobbyChat: PERMISSIONS_LOBBY_CHAT;
-        // meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE;
     };
     width: {
         current: number;
