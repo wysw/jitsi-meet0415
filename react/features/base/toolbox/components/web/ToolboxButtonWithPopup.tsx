@@ -101,21 +101,6 @@ export default function ToolboxButtonWithPopup(props: IProps) {
             style = { styles }>
             {children}
             <div className = 'settings-button-small-icon-container'>
-                <Popover
-                    content = { popoverContent }
-                    headingLabel = { ariaLabel }
-                    onPopoverClose = { onPopoverClose }
-                    onPopoverOpen = { onPopoverOpen }
-                    position = 'top'
-                    visible = { visible }>
-                    <Icon
-                        alt = { ariaLabel }
-                        className = { `settings-button-small-icon ${iconDisabled
-                            ? 'settings-button-small-icon--disabled'
-                            : ''}` }
-                        size = { 16 }
-                        src = { icon } />
-                </Popover>
             </div>
         </div>
     );

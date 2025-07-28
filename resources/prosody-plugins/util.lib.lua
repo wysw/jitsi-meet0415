@@ -620,11 +620,14 @@ end
 local function table_compare(old_table, new_table)
     local removed = {}
     local added = {}
+    local modified = {}
 
     -- Find removed items (in old but not in new)
-    for id, _ in pairs(old_table) do
+    for id, value in pairs(old_table) do
         if new_table[id] == nil then
             table.insert(removed, id)
+        elseif new_table[id] ~= value then
+            table.insert(modified, id)
         end
     end
 
@@ -635,7 +638,20 @@ local function table_compare(old_table, new_table)
         end
     end
 
-    return removed, added
+    return removed, added, modified
+end
+
+local function table_equals(t1, t2)
+    if t1 == nil then
+        return t2 == nil;
+    end
+    if t2 == nil then
+        return t1 == nil;
+    end
+
+    local removed, added, modified = table_compare(t1, t2);
+
+    return next(removed) == nil and next(added) == nil and next(modified) == nil
 end
 
 -- Splits a string using delimiter
@@ -686,23 +702,22 @@ local function is_admin(_jid)
 end
 
 -- Filter out identity information (nick name, email, etc) from a presence stanza.
-local function filter_identity_from_presence(stanza)
+local function filter_identity_from_presence(orig_stanza)
+    local stanza = st.clone(orig_stanza);
+
     stanza:remove_children('nick', 'http://jabber.org/protocol/nick');
     stanza:remove_children('email');
     stanza:remove_children('stats-id');
-    stanza:tag('email'):text('guest@guest.com'):up();
     local identity = stanza:get_child('identity');
     if identity then
         local user = identity:get_child('user');
         local name = identity:get_child('name');
         if user then
             user:remove_children('email');
-            user:tag('email'):text('guest@guest.com'):up();
             user:remove_children('name');
         end
         if name then
             name:remove_children('name');  -- Remove name with no namespace
-            name:tag('name'):text('Guest'):up();  -- Add new name with guest value
         end
     end
 
@@ -747,4 +762,5 @@ return {
     table_compare = table_compare;
     table_shallow_copy = table_shallow_copy;
     table_find = table_find;
+    table_equals = table_equals;
 };

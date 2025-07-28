@@ -2,11 +2,11 @@ import { UPDATE_CONFERENCE_METADATA } from '../base/conference/actionTypes';
 import { ILocalParticipant, IParticipant } from '../base/participants/types';
 import {
   PERMISSIONS_MEETING_CHAT,
-  PERMISSIONS_LOBBY_CHAT,
-  PERMISSIONS_MEETING_SCREEN_SHARE
+  PERMISSIONS_LOBBY_CHAT
 } from '../base/participants/constants';
 
 import ReducerRegistry from '../base/redux/ReducerRegistry';
+import { IVisitorChatParticipant } from '../visitors/types';
 
 import {
     ADD_MESSAGE,
@@ -41,7 +41,6 @@ const DEFAULT_STATE = {
     chatPermissions: {
         meetingChat: PERMISSIONS_MEETING_CHAT.MUTED, // 默认允许自由聊天
         lobbyChat: PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST, // 默认允许等候室私聊主持人
-        meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE.PROHIBITED, // 默认允许等候室私聊主持人
     },
     isResizing: false,
     width: {
@@ -63,11 +62,10 @@ export interface IChatState {
     } | ILocalParticipant;
     messages: IMessage[];
     nbUnreadMessages: number;
-    privateMessageRecipient?: IParticipant;
+    privateMessageRecipient?: IParticipant | IVisitorChatParticipant;
     chatPermissions: {
         meetingChat: PERMISSIONS_MEETING_CHAT;
         lobbyChat: PERMISSIONS_LOBBY_CHAT;
-        meetingScreenShare: PERMISSIONS_MEETING_SCREEN_SHARE;
     };
     width: {
         current: number;
@@ -78,13 +76,12 @@ export interface IChatState {
 ReducerRegistry.register<IChatState>('features/chat', (state = DEFAULT_STATE, action): IChatState => {
     switch (action.type) {
       case SET_CHAT_PERMISSIONS: {
-        const { meetingChat, lobbyChat, meetingScreenShare } = action.payload;
+        const { meetingChat, lobbyChat } = action.payload;
         return {
           ...state,
           chatPermissions: {
             meetingChat: meetingChat || state.chatPermissions.meetingChat,
             lobbyChat: lobbyChat || state.chatPermissions.lobbyChat,
-            meetingScreenShare: meetingScreenShare || PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST
           },
         };
       }
@@ -92,6 +89,7 @@ ReducerRegistry.register<IChatState>('features/chat', (state = DEFAULT_STATE, ac
         const newMessage: IMessage = {
             displayName: action.displayName,
             error: action.error,
+            isFromVisitor: Boolean(action.isFromVisitor),
             participantId: action.participantId,
             isReaction: action.isReaction,
             messageId: action.messageId,
@@ -101,6 +99,7 @@ ReducerRegistry.register<IChatState>('features/chat', (state = DEFAULT_STATE, ac
             privateMessage: action.privateMessage,
             lobbyChat: action.lobbyChat,
             recipient: action.recipient,
+            sentToVisitor: Boolean(action.sentToVisitor),
             timestamp: action.timestamp
         };
 

@@ -19,10 +19,10 @@ export function setupVisitorStartupMedia(mediaTypes: Array<MediaType>) {
         mediaTypes.forEach(mediaType => {
             switch (mediaType) {
             case MEDIA_TYPE.AUDIO:
-                dispatch(setAudioMuted(false, true));
+                dispatch(setAudioMuted(true, true)); // true 表示静音
                 break;
             case MEDIA_TYPE.VIDEO:
-                dispatch(setVideoMuted(false, VIDEO_MUTISM_AUTHORITY.USER, true));
+                dispatch(setVideoMuted(true, VIDEO_MUTISM_AUTHORITY.USER, true)); // true 表示关闭摄像头
             }
         });
     };

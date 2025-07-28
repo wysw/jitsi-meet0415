@@ -9,13 +9,12 @@ import { getLocalizedDateFormatter } from '../base/i18n/dateUtil';
 import i18next from '../base/i18n/i18next';
 import { MEET_FEATURES } from '../base/jwt/constants';
 import { isJwtFeatureEnabled } from '../base/jwt/functions';
-import {
-  getParticipantById,
-  isLocalParticipantModerator,
-} from '../base/participants/functions';
+import { getParticipantById, isPrivateChatEnabled, isLocalParticipantModerator } from '../base/participants/functions';
+import { IParticipant } from '../base/participants/types';
 import { escapeRegexp } from '../base/util/helpers';
 import { getParticipantsPaneWidth } from '../participants-pane/functions';
 import { VIDEO_SPACE_MIN_SIZE } from '../video-layout/constants';
+import { IVisitorChatParticipant } from '../visitors/types';
 
 import { MESSAGE_TYPE_ERROR, MESSAGE_TYPE_LOCAL, TIMESTAMP_FORMAT } from './constants';
 import {
@@ -54,27 +53,27 @@ const SLACK_EMOJI_REGEXP_ARRAY: Array<[RegExp, string]> = [];
 (function() {
     for (const [ key, value ] of Object.entries(aliases)) {
 
-        // Add ASCII emoticons
-        const asciiEmoticons = emojiAsciiAliases[key];
+    // Add ASCII emoticons
+    const asciiEmoticons = emojiAsciiAliases[key];
 
-        if (asciiEmoticons) {
+    if (asciiEmoticons) {
             const asciiEscapedValues = asciiEmoticons.map((v: string) => escapeRegexp(v));
 
-            const asciiRegexp = `(${asciiEscapedValues.join('|')})`;
+      const asciiRegexp = `(${asciiEscapedValues.join('|')})`;
 
-            // Escape urls
+      // Escape urls
             const formattedAsciiRegexp = key === 'confused'
                 ? `(?=(${asciiRegexp}))(:(?!//).)`
                 : asciiRegexp;
 
             ASCII_EMOTICON_REGEXP_ARRAY.push([ new RegExp(formattedAsciiRegexp, 'g'), value as string ]);
-        }
+    }
 
-        // Add slack-type emojis
-        const emojiRegexp = `\\B(${escapeRegexp(`:${key}:`)})\\B`;
+    // Add slack-type emojis
+    const emojiRegexp = `\\B(${escapeRegexp(`:${key}:`)})\\B`;
 
         SLACK_EMOJI_REGEXP_ARRAY.push([ new RegExp(emojiRegexp, 'g'), value as string ]);
-    }
+  }
 })();
 
 /**
@@ -85,17 +84,17 @@ const SLACK_EMOJI_REGEXP_ARRAY: Array<[RegExp, string]> = [];
  * @returns {string}
  */
 export function replaceNonUnicodeEmojis(message: string): string {
-    let replacedMessage = message;
+  let replacedMessage = message;
 
     for (const [ regexp, replaceValue ] of SLACK_EMOJI_REGEXP_ARRAY) {
-        replacedMessage = replacedMessage.replace(regexp, replaceValue);
-    }
+    replacedMessage = replacedMessage.replace(regexp, replaceValue);
+  }
 
     for (const [ regexp, replaceValue ] of ASCII_EMOTICON_REGEXP_ARRAY) {
-        replacedMessage = replacedMessage.replace(regexp, replaceValue);
-    }
+    replacedMessage = replacedMessage.replace(regexp, replaceValue);
+  }
 
-    return replacedMessage;
+  return replacedMessage;
 }
 
 /**
@@ -105,38 +104,38 @@ export function replaceNonUnicodeEmojis(message: string): string {
  * @returns {number} The number of unread messages.
  */
 export function getUnreadCount(state: IReduxState) {
-    const { lastReadMessage, messages } = state['features/chat'];
-    const messagesCount = messages.length;
+  const { lastReadMessage, messages } = state['features/chat'];
+  const messagesCount = messages.length;
 
-    if (!messagesCount) {
-        return 0;
-    }
+  if (!messagesCount) {
+    return 0;
+  }
 
-    let reactionMessages = 0;
+  let reactionMessages = 0;
     let lastReadIndex: number;
 
-    if (navigator.product === 'ReactNative') {
-        // React native stores the messages in a reversed order.
-        lastReadIndex = messages.indexOf(<IMessage>lastReadMessage);
+  if (navigator.product === 'ReactNative') {
+    // React native stores the messages in a reversed order.
+    lastReadIndex = messages.indexOf(<IMessage>lastReadMessage);
 
-        for (let i = 0; i < lastReadIndex; i++) {
-            if (messages[i].isReaction) {
-                reactionMessages++;
-            }
-        }
-
-        return lastReadIndex - reactionMessages;
+    for (let i = 0; i < lastReadIndex; i++) {
+      if (messages[i].isReaction) {
+        reactionMessages++;
+      }
     }
 
-    lastReadIndex = messages.lastIndexOf(<IMessage>lastReadMessage);
+    return lastReadIndex - reactionMessages;
+  }
 
-    for (let i = lastReadIndex + 1; i < messagesCount; i++) {
-        if (messages[i].isReaction) {
-            reactionMessages++;
-        }
+  lastReadIndex = messages.lastIndexOf(<IMessage>lastReadMessage);
+
+  for (let i = lastReadIndex + 1; i < messagesCount; i++) {
+    if (messages[i].isReaction) {
+      reactionMessages++;
     }
+  }
 
-    return messagesCount - (lastReadIndex + 1) - reactionMessages;
+  return messagesCount - (lastReadIndex + 1) - reactionMessages;
 }
 
 /**
@@ -148,7 +147,7 @@ export function getUnreadCount(state: IReduxState) {
 export function areSmileysDisabled(state: IReduxState) {
     const disableChatSmileys = state['features/base/config']?.disableChatSmileys === true;
 
-    return disableChatSmileys;
+  return disableChatSmileys;
 }
 
 /**
@@ -169,11 +168,11 @@ export function getFormattedTimestamp(message: IMessage) {
  * @returns {string}
  */
 export function getMessageText(message: IMessage) {
-    return message.messageType === MESSAGE_TYPE_ERROR
-        ? i18next.t('chat.error', {
+  return message.messageType === MESSAGE_TYPE_ERROR
+    ? i18next.t('chat.error', {
             error: message.message
-        })
-        : message.message;
+      })
+    : message.message;
 }
 
 
@@ -188,9 +187,24 @@ export function getCanReplyToMessage(state: IReduxState, message: IMessage) {
     const { knocking } = state['features/lobby'];
     const participant = getParticipantById(state, message.participantId);
 
-    return Boolean(participant)
+    // Check if basic reply conditions are met
+    const basicCanReply = (Boolean(participant) || message.isFromVisitor)
         && (message.privateMessage || (message.lobbyChat && !knocking))
         && message.messageType !== MESSAGE_TYPE_LOCAL;
+
+    if (!basicCanReply) {
+        return false;
+    }
+
+    // Check private chat configuration for visitor messages
+    if (message.isFromVisitor) {
+        const visitorParticipant = { id: message.participantId, name: message.displayName, isVisitor: true as const };
+
+        return isPrivateChatEnabled(visitorParticipant, state);
+    }
+
+    // For non-visitor messages, use the regular participant
+    return isPrivateChatEnabled(participant, state);
 }
 
 /**
@@ -271,17 +285,6 @@ export function hasChatPermissions(state: IReduxState) {
 
   return true; // 通过所有权限检查，允许发送消息
 }
-
-export function hasScreenSharePermissions(state: IReduxState) {
-  // 判断当前用户是否是主持人（主持人不受聊天权限限制）
-  if (isLocalParticipantModerator(state)) {
-    return true;
-  }
-  const { chatPermissions } =
-    state['features/chat'];    
-  return chatPermissions.meetingScreenShare === PERMISSIONS_MEETING_SCREEN_SHARE.ALLOW; // 通过所有权限检查，允许发送消息
-}
-
 /**
  * Returns the message that is displayed as a notice for private messages.
  *
@@ -289,9 +292,20 @@ export function hasScreenSharePermissions(state: IReduxState) {
  * @returns {string}
  */
 export function getPrivateNoticeMessage(message: IMessage) {
-    return i18next.t('chat.privateNotice', {
-        recipient: message.messageType === MESSAGE_TYPE_LOCAL ? message.recipient : i18next.t('chat.you')
-    });
+    let recipient;
+
+    if (message.messageType === MESSAGE_TYPE_LOCAL) {
+        // For messages sent by local user, show the recipient name
+        // For visitor messages, use the visitor's display name with indicator
+        recipient = message.sentToVisitor ? `${message.recipient} ${i18next.t('visitors.chatIndicator')}` : message.recipient;
+    } else {
+        // For messages received from others, show "you"
+        recipient = i18next.t('chat.you');
+    }
+
+  return i18next.t('chat.privateNotice', {
+        recipient
+  });
 }
 
 /**
@@ -331,13 +345,13 @@ export function getChatPermissions(stateful: IStateful) {
  * @returns {boolean} - Returns true if the participant is not allowed to send group messages.
  */
 export function isSendGroupChatDisabled(state: IReduxState) {
-    const { groupChatRequiresPermission } = state['features/dynamic-branding'];
+  const { groupChatRequiresPermission } = state['features/dynamic-branding'];
 
-    if (!groupChatRequiresPermission) {
-        return false;
-    }
+  if (!groupChatRequiresPermission) {
+      return false;
+  }
 
-    return !isJwtFeatureEnabled(state, MEET_FEATURES.SEND_GROUPCHAT, false);
+  return !isJwtFeatureEnabled(state, MEET_FEATURES.SEND_GROUPCHAT, false);
 }
 
 /**
@@ -352,4 +366,16 @@ export function getChatMaxSize(state: IReduxState) {
     const { clientWidth } = state['features/base/responsive-ui'];
 
     return Math.max(clientWidth - getParticipantsPaneWidth(state) - VIDEO_SPACE_MIN_SIZE, 0);
+}
+
+/**
+ * Type guard to check if a participant is a visitor chat participant.
+ *
+ * @param {IParticipant | IVisitorChatParticipant | undefined} participant - The participant to check.
+ * @returns {boolean} - True if the participant is a visitor chat participant.
+ */
+export function isVisitorChatParticipant(
+        participant?: IParticipant | IVisitorChatParticipant
+): participant is IVisitorChatParticipant {
+    return Boolean(participant && 'isVisitor' in participant && participant.isVisitor === true);
 }

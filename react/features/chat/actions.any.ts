@@ -70,7 +70,7 @@ export function setChatPermissions(permissionsObj: any) {
     const roomJid = conference?.room?.roomjid ?? '';
     const meetingChat = permissionsObj.meetingChat ?? permission.meetingChat;
     const lobbyChat = permissionsObj.lobbyChat ?? permission.lobbyChat;
-    const meetingScreenShare = permissionsObj.meetingScreenShare ?? permission.meetingScreenShare;
+    // const meetingScreenShare = permissionsObj.meetingScreenShare ?? permission.meetingScreenShare;
 
     dispatch({
       type: SET_CHAT_PERMISSIONS,
@@ -81,13 +81,15 @@ export function setChatPermissions(permissionsObj: any) {
       // 发送命令给会议，更新聊天权限
       conference.sendCommand('chat-permissions', {
         value: JSON.stringify({
-          permissions: { meetingChat, lobbyChat, meetingScreenShare },
+        //   permissions: { meetingChat, lobbyChat, meetingScreenShare },
+          permissions: { meetingChat, lobbyChat },
           from: participantId,
         }),
       });
       conference.sendCommandOnce('chat-permissions', {
         value: JSON.stringify({
-          permissions: { meetingChat, lobbyChat, meetingScreenShare },
+          permissions: { meetingChat, lobbyChat },
+        //   permissions: { meetingChat, lobbyChat, meetingScreenShare },
           from: participantId,
         }),
       });

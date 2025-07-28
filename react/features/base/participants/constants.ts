@@ -66,7 +66,7 @@ export const PARTICIPANT_LEFT_SOUND_ID = 'PARTICIPANT_LEFT_SOUND';
 export const PARTICIPANT_ROLE = {
     MODERATOR: 'moderator',
     NONE: 'none',
-  PARTICIPANT: 'participant',
+    PARTICIPANT: 'participant'
 };
 
 /**
@@ -92,13 +92,6 @@ export enum PERMISSIONS_MEETING_CHAT {
    * All participants are muted and cannot send messages.
    */
   MUTED = 'muted',
-}
-/**
- * Meeting chat permissions for SCREEN_SHARE
- */
-export enum PERMISSIONS_MEETING_SCREEN_SHARE {
-  ALLOW  = 'allow',
-  PROHIBITED= 'prohibited',
 }
 
 /**
