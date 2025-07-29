@@ -49,12 +49,12 @@ function ReactionMenu({
         <View style = { overflowMenu ? _styles.overflowReactionMenu : _styles.reactionMenu }>
             <View style = { _styles.reactionRow }>
                 {
-                    Object.keys(REACTIONS).map(key => (
-                        <ReactionButton
-                            key = { key }
-                            reaction = { key }
-                            styles = { _styles.reactionButton } />
-                    ))
+                    // Object.keys(REACTIONS).map(key => (
+                    //     <ReactionButton
+                    //         key = { key }
+                    //         reaction = { key }
+                    //         styles = { _styles.reactionButton } />
+                    // ))
                 }
                 {
                     gifEnabled && (
