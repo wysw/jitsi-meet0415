@@ -326,7 +326,7 @@ function _addChatMsgListener(conference: IJitsiConference, store: IStore) {
     const localParticipant = getLocalParticipant(store.getState()); // 获取当前用户信息
     const participantId = localParticipant?.id; // 获取当前用户的 ID
     conference.addCommandListener('chat-permissions', function({value}: any) {
-      const { permissions, from } = value ? JSON.parse(value) : {}        
+      const { permissions, from } = value ? JSON.parse(value) : {}       
         // 例如，存储到 Redux 状态
         if(from && participantId !== from && permissions){
           store.dispatch({
@@ -737,24 +737,28 @@ function _checkChatPermissions(
     const chatState = state['features/chat'];
     const { privateMessageRecipient, isLobbyChatActive, lobbyMessageRecipient } =
       state['features/chat'];
+      debugger
     const chatPermissions = chatState.chatPermissions; // 获取当前的聊天权限
     const occupant = getLocalParticipant(state);
     // 发送警告消息的返回函数
     const sendWarning = (msg: string) => {
       return { value: false, msg: msg }; // 返回不允许的消息和警告
     };
+    if(occupant?.role === 'moderator'){
+        return { value: true, msg: '' };
+    }
   
     // 🚫 **1. 处理会议聊天权限**
     if (!isLobbyChatActive) {
       const chatMode = chatPermissions.meetingChat;
   
-      if (chatMode === 'muted' && occupant?.role !== 'moderator') {
+      if (chatMode === 'muted') {
         return sendWarning('会议已开启禁言模式，只有主持人可以发言！');
       } else if (chatMode === 'publicOnly' && privateMessageRecipient) {
         return sendWarning('会议仅允许公开聊天，私聊已被禁用！');
       } else if (
         chatMode === 'privateToHost' &&
-        !(privateMessageRecipient && privateMessageRecipient.role !== 'moderator')
+        !(privateMessageRecipient && privateMessageRecipient.role === 'moderator')
       ) {
         return sendWarning('你只能私聊主持人，其他私聊已被禁用！');
       }

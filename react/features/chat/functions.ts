@@ -20,7 +20,6 @@ import { MESSAGE_TYPE_ERROR, MESSAGE_TYPE_LOCAL, TIMESTAMP_FORMAT } from './cons
 import {
   PERMISSIONS_MEETING_CHAT,
   PERMISSIONS_LOBBY_CHAT,
-  PERMISSIONS_MEETING_SCREEN_SHARE
 } from '../base/participants/constants';
 import { IMessage } from './types';
 import { toState } from '../base/redux/functions';
@@ -236,51 +235,17 @@ export function hasChatPermissions(state: IReduxState) {
   }
   // 获取全局状态中的聊天权限和相关数据
   const { knocking: lobbyChat } = state['features/lobby']; // 是否在等候室
-  const { chatPermissions, messages, privateMessageRecipient } =
+  const { chatPermissions } =
     state['features/chat'];
 
-  // 判断当前私聊对象是否是主持人
-  const isRecipientModerator = privateMessageRecipient?.role === 'moderator';
-
-  // 获取最近一条消息（适配不同平台）
-  const lastMessage =
-    navigator.product === 'ReactNative'
-      ? messages[0]
-      : messages[messages.length - 1];
-
   // 会议中聊天权限检查
-  if (!lobbyChat) {
-    switch (chatPermissions.meetingChat) {
-      case PERMISSIONS_MEETING_CHAT.MUTED:
-        return false; // 禁言，禁止所有聊天
-      case PERMISSIONS_MEETING_CHAT.PRIVATETO_HOST:
-        if (!lastMessage?.privateMessage || !isRecipientModerator) {
-          return false; // 仅允许私聊主持人，其他情况禁言
-        }
-        break;
-      case PERMISSIONS_MEETING_CHAT.PUBLIC_ONLY:
-        if (lastMessage?.privateMessage) {
-          return false; // 禁止私聊，仅允许公开聊天
-        }
-        break;
-      default:
-        break; // `FREE` 模式，无需额外限制
-    }
+  if (!lobbyChat && chatPermissions.meetingChat === PERMISSIONS_MEETING_CHAT.MUTED) {
+    return false; // 禁言，禁止所有聊天
   }
 
   // 等候室聊天权限检查
-  if (lobbyChat) {
-    switch (chatPermissions.lobbyChat) {
-      case PERMISSIONS_LOBBY_CHAT.MUTED:
-        return false; // 禁止等候室聊天
-      case PERMISSIONS_LOBBY_CHAT.PRIVATETO_HOST:
-        if (!lastMessage?.privateMessage || !isRecipientModerator) {
-          return false; // 仅允许等候室成员私聊主持人
-        }
-        break;
-      default:
-        break;
-    }
+  if (lobbyChat && chatPermissions.lobbyChat === PERMISSIONS_LOBBY_CHAT.MUTED) {
+    return false; // 仅允许等候室成员私聊主持人
   }
 
   return true; // 通过所有权限检查，允许发送消息

@@ -11,7 +11,7 @@ import { IconFaceSmile, IconSend } from '../../../base/icons/svg';
 import Button from '../../../base/ui/components/web/Button';
 import Input from '../../../base/ui/components/web/Input';
 import { CHAT_SIZE } from '../../constants';
-import { areSmileysDisabled, isSendGroupChatDisabled } from '../../functions';
+import { areSmileysDisabled, isSendGroupChatDisabled, hasChatPermissions } from '../../functions';
 import { useSelector } from 'react-redux';
 import { getParticipantCount, isLocalParticipantModerator } from '../../../base/participants/functions';
 
@@ -66,6 +66,7 @@ interface IProps extends WithTranslation {
     _isSendGroupChatDisabled: boolean;
 
     _isModerator: any;
+    _hasChatPermissions: boolean;
 
     /**
      * The id of the message recipient, if any.
@@ -200,8 +201,8 @@ class ChatInput extends Component<IProps, IState> {
                         maxRows = { 5 }
                         onChange = { this._onMessageChange }
                         onKeyPress = { this._onDetectSubmit }
-                        placeholder = {  this.props._isModerator ? this.props.t('chat.messagebox') : '当前聊天室禁止发言' }
-                        disabled={ !this.props._isModerator }
+                        placeholder = {  this.props._isModerator || this.props._hasChatPermissions ? this.props.t('chat.messagebox') : '当前聊天室禁止发言' }
+                        disabled={ !this.props._isModerator && !this.props._hasChatPermissions }
                         ref = { this._textArea }
                         textarea = { true }
                         value = { this.state.message } />
@@ -347,7 +348,7 @@ class ChatInput extends Component<IProps, IState> {
  * }}
  */
 const mapStateToProps = (state: IReduxState) => {
-    const { privateMessageRecipient, width } = state['features/chat'];
+    const { privateMessageRecipient, width, chatPermissions } = state['features/chat'];
     const isGroupChatDisabled = isSendGroupChatDisabled(state);
     const participantCount = getParticipantCount(state);
     const isModerator = isLocalParticipantModerator(state);
@@ -357,7 +358,8 @@ const mapStateToProps = (state: IReduxState) => {
         _privateMessageRecipientId: privateMessageRecipient?.id,
         _isSendGroupChatDisabled: isGroupChatDisabled,
         _chatWidth: width.current ?? CHAT_SIZE,
-        _isModerator
+        _isModerator,
+        _hasChatPermissions: hasChatPermissions(state)
     };
 };
 

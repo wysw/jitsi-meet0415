@@ -312,7 +312,7 @@ export function useToolboxButtons(
         recording,
         livestreaming: liveStreaming,
         linktosalesforce,
-        sharedvideo: shareVideo,
+        // sharedvideo: shareVideo,
         shareaudio,
         noisesuppression: noiseSuppression,
         whiteboard,
