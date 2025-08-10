@@ -627,7 +627,10 @@ export function getShareInfoText(
         roomUrl = `<a href="${roomUrl}">${roomUrl}</a>`;
     }
 
-    let infoText = i18next.t('share.mainText', { roomUrl });
+    // 修改分享內容格式
+    const webUrl = useHtml ? roomUrl : `网页版：${roomUrl}`;
+    const appDownloadUrl = useHtml ? '<a href="https://会通.com">https://会通.com</a>' : 'https://会通.com';
+    let infoText = `${webUrl}\n下载app：${appDownloadUrl}`;
 
     const { room } = parseURIString(inviteUrl);
     const { dialInConfCodeUrl, dialInNumbersUrl, hosts } = state['features/base/config'];
