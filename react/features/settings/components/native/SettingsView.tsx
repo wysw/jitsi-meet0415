@@ -77,10 +77,10 @@ const SettingsView = ({ isInWelcomePage }: IProps) => {
                     </TouchableHighlight>
                 </View>
                 <GeneralSection />
-                { isInWelcomePage && <>
+                {/* { isInWelcomePage && <>
                     <Divider style = { styles.fieldSeparator as ViewStyle } />
                     <ConferenceSection />
-                </> }
+                </> } */}
                 <Divider style = { styles.fieldSeparator as ViewStyle } />
                 <NotificationsSection />
 
