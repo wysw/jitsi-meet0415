@@ -79,7 +79,7 @@
 	<key>RTCAppGroupIdentifier</key>
 	<string>group.org.jitsi2025.meet.appgroup</string>
 	<key>RTCScreenSharingExtension</key>
-	<string>org.jitsi2025.meet.broadcastextension</string>
+	<string>org.jitsi2025.meet.cast</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
