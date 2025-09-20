@@ -77,7 +77,7 @@
 		<string>org.jitsi.JitsiMeet.ios.conference</string>
 	</array>
 	<key>RTCAppGroupIdentifier</key>
-	<string>group.org.jitsi2025.meet.appgroup</string>
+	<string>group.org.jitsi2025.appgroup</string>
 	<key>RTCScreenSharingExtension</key>
 	<string>org.jitsi2025.meet.cast</string>
 	<key>UIBackgroundModes</key>
