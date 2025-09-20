@@ -12,7 +12,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.org.jitsicyril.meet.appgroup</string>
+		<string>group.org.jitsi2025.appgroup</string>
 	</array>
 </dict>
 </plist>
